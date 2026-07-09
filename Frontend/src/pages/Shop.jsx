@@ -1,0 +1,131 @@
+import React, { useState, useEffect } from 'react';
+import ShopBanner from '../components/shop/ShopBanner';
+import ShopSidebar from '../components/shop/ShopSidebar';
+import ShopTopBar from '../components/shop/ShopTopBar';
+import ProductCard from '../components/product/ProductCard';
+import Pagination from '../components/common/Pagination';
+
+const Shop = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOption, setSortOption] = useState('default');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/products');
+        const data = await response.json();
+        if (data.success) {
+          // Map database structure to frontend expectations
+          const formattedProducts = data.data.map(p => {
+            let discount = null;
+            const orig = parseFloat(p.original_price);
+            const curr = parseFloat(p.price);
+            if (orig > curr) {
+              discount = Math.round(((orig - curr) / orig) * 100);
+            }
+            
+            // Description might be a JSON string array, parse to get a single string snippet
+            let descSnippet = '';
+            if (Array.isArray(p.description) && p.description.length > 0) {
+              descSnippet = p.description[0];
+            } else if (typeof p.description === 'string') {
+              try {
+                const parsed = JSON.parse(p.description);
+                descSnippet = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : p.description;
+              } catch (e) {
+                descSnippet = p.description;
+              }
+            }
+
+            return {
+              id: p.id,
+              name: p.name,
+              category: p.category_name, // Map for the filter logic
+              description: descSnippet,
+              originalPrice: orig || null,
+              price: curr,
+              discount: discount,
+              image: p.main_image
+            };
+          });
+          setProducts(formattedProducts);
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const min = minPrice === '' ? 0 : Number(minPrice);
+    const max = maxPrice === '' ? Infinity : Number(maxPrice);
+    const matchesPrice = product.price >= min && product.price <= max;
+    
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+
+    return matchesSearch && matchesPrice && matchesCategory;
+  });
+
+  let sortedProducts = [...filteredProducts];
+  if (sortOption === 'price-low') {
+    sortedProducts.sort((a, b) => a.price - b.price);
+  } else if (sortOption === 'price-high') {
+    sortedProducts.sort((a, b) => b.price - a.price);
+  } else if (sortOption === 'latest') {
+    sortedProducts.sort((a, b) => b.id - a.id);
+  }
+
+  return (
+    <main className="shop-page bg-gray-50 min-h-screen pb-16">
+      <ShopBanner />
+      
+      <div className="max-w-7xl mx-auto px-5 md:px-12 pt-12 flex flex-col lg:flex-row">
+        {/* Sidebar */}
+        <ShopSidebar 
+          searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+          minPrice={minPrice} setMinPrice={setMinPrice}
+          maxPrice={maxPrice} setMaxPrice={setMaxPrice}
+          selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories}
+        />
+
+        {/* Main Content */}
+        <div className="w-full lg:w-3/4">
+          <ShopTopBar 
+            itemsPerPage={itemsPerPage}
+            setItemsPerPage={setItemsPerPage}
+            selectedCategories={selectedCategories}
+            setSelectedCategories={setSelectedCategories}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+          />
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 ? (
+              sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div className="col-span-full py-10 text-center text-gray-500 font-semibold">
+                No products found matching your filters.
+              </div>
+            )}
+          </div>
+
+          {sortedProducts.length > 0 && <Pagination />}
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default Shop;
