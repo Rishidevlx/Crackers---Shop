@@ -37,8 +37,15 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = (id, quantity) => {
-    if (quantity < 1) return;
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity } : item));
+    setCartItems(prev => prev.map(item => {
+      if (item.id === id) {
+        const minMoq = item.moq || 1;
+        // If quantity is less than MOQ, snap back to MOQ.
+        const newQuantity = quantity < minMoq ? minMoq : quantity;
+        return { ...item, quantity: newQuantity };
+      }
+      return item;
+    }));
   };
 
   const clearCart = () => {

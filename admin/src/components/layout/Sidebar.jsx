@@ -99,7 +99,7 @@ const Sidebar = ({ onClose }) => {
       title: 'Contact Details',
       icon: FiPhone,
       subItems: [
-        { title: 'WhatsApp Settings', to: '/dashboard/contact/whatsapp', onClick: onClose },
+        { title: 'WhatsApp Settings', to: '/dashboard/settings/whatsapp', onClick: onClose },
         { title: 'Contact Details', to: '/dashboard/contact/details', onClick: onClose },
         { title: 'Social Media Links', to: '/dashboard/contact/social', onClick: onClose },
       ]

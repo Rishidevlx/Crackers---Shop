@@ -72,7 +72,7 @@ const ProductCard = ({ product }) => {
 
         {/* Add to Cart Button */}
         <button 
-          onClick={() => addToCart(product, 1)}
+          onClick={() => addToCart(product, product.moq || 1)}
           className="w-full bg-footer text-white py-2.5 rounded-full flex items-center justify-center gap-2 font-semibold text-sm hover:bg-brand transition-colors duration-300"
         >
           <FiShoppingCart />

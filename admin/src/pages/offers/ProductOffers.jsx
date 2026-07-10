@@ -3,7 +3,7 @@ import { FiSearch, FiSave, FiAlertCircle, FiCheck, FiFilter } from 'react-icons/
 import toast from 'react-hot-toast';
 const getImageUrl = (img) => {
   if (!img) return '';
-  return img.startsWith('http') ? img : `http://localhost:5000${img.startsWith('/') ? '' : '/'}${img}`;
+  return img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img.startsWith('/') ? '' : '/'}${img}`;
 };
 
 const ProductOffers = () => {
@@ -43,8 +43,8 @@ const ProductOffers = () => {
     setIsLoading(true);
     try {
       const [prodRes, catRes] = await Promise.all([
-        fetch('http://localhost:5000/api/products').then(res => res.json()),
-        fetch('http://localhost:5000/api/categories').then(res => res.json())
+        fetch(import.meta.env.VITE_API_URL + '/api/products').then(res => res.json()),
+        fetch(import.meta.env.VITE_API_URL + '/api/categories').then(res => res.json())
       ]);
       setProducts(prodRes.data);
       setCategories(catRes.data);
@@ -121,7 +121,7 @@ const ProductOffers = () => {
     setIsSaving(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5000/api/products/bulk-update-offers', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/products/bulk-update-offers', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

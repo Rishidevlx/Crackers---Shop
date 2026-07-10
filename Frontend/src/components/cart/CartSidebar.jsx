@@ -118,7 +118,42 @@ const CartSidebar = ({ isOpen, onClose }) => {
               <span className="text-brand">₹{cartTotal.toFixed(2)}</span>
             </div>
             <p className="text-xs text-gray-500 mb-4 text-center">Taxes and shipping calculated at checkout</p>
-            <button className="w-full bg-[#25D366] text-white py-3 rounded-full font-bold hover:bg-[#128C7E] transition-colors shadow-md flex items-center justify-center gap-2">
+            <button 
+              onClick={async () => {
+                try {
+                  const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
+                  const data = await res.json();
+                  const waNumber = data.data?.whatsapp_settings?.number || '';
+                  
+                  if (!waNumber) {
+                    alert('WhatsApp number not configured. Please try again later.');
+                    return;
+                  }
+
+                  let message = "Hi, I would like to order/inquire about the following items:\n\n";
+                  cartItems.forEach((item, index) => {
+                    message += `${index + 1}. *${item.name}*\n`;
+                    if (item.category) {
+                      message += `   Category: ${item.category}\n`;
+                    }
+                    message += `   Price: ₹${item.price.toFixed(2)}\n`;
+                    message += `   Qty: ${item.quantity} ${item.unit ? item.unit : ''}\n`;
+                    if (item.image) {
+                      message += `   Link/Image: ${item.image}\n`;
+                    }
+                    message += '\n';
+                  });
+                  message += `*Total Estimated Amount: ₹${cartTotal.toFixed(2)}*`;
+
+                  const encodedMessage = encodeURIComponent(message);
+                  window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
+                } catch (error) {
+                  console.error('Error with whatsapp enquiry:', error);
+                  alert('Something went wrong. Please try again.');
+                }
+              }}
+              className="w-full bg-[#25D366] text-white py-3 rounded-full font-bold hover:bg-[#128C7E] transition-colors shadow-md flex items-center justify-center gap-2"
+            >
               <FaWhatsapp className="text-xl" />
               WHATSAPP ENQUIRY
             </button>

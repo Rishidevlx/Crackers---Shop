@@ -17,7 +17,7 @@ const Login = () => {
     // We can show a loading toast if needed, but button state is fine for now
     
     try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

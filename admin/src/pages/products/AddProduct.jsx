@@ -15,6 +15,7 @@ const AddProduct = () => {
     category_id: '',
     original_price: '',
     price: '',
+    moq: 1,
     unit: ['packet'],
     status: 'active'
   });
@@ -32,7 +33,7 @@ const AddProduct = () => {
 
   const fetchProductData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
       const data = await response.json();
       if (data.success) {
         const p = data.data;
@@ -41,6 +42,7 @@ const AddProduct = () => {
           category_id: p.category_id || '',
           original_price: p.original_price || '',
           price: p.price || '',
+          moq: p.moq || 1,
           unit: p.unit ? (typeof p.unit === 'string' ? JSON.parse(p.unit) : p.unit) : ['packet'],
           status: p.status || 'active'
         });
@@ -55,7 +57,7 @@ const AddProduct = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/categories');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/categories');
       const data = await response.json();
       if (data.success) {
         setCategories(data.data.filter(c => c.status === 'active'));
@@ -100,7 +102,7 @@ const AddProduct = () => {
     uploadData.append('image', file);
 
     const token = localStorage.getItem('adminToken');
-    const response = await fetch('http://localhost:5000/api/upload', {
+    const response = await fetch(import.meta.env.VITE_API_URL + '/api/upload', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: uploadData
@@ -172,7 +174,7 @@ const AddProduct = () => {
         sub_images: subImages
       };
 
-      const url = isEditMode ? `http://localhost:5000/api/products/${id}` : 'http://localhost:5000/api/products';
+      const url = isEditMode ? `${import.meta.env.VITE_API_URL}/api/products/${id}` : import.meta.env.VITE_API_URL + '/api/products';
       const method = isEditMode ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -278,6 +280,20 @@ const AddProduct = () => {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Minimum Order Quantity (MOQ) */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Minimum Order Quantity (MOQ) *</label>
+                <input 
+                  type="number" 
+                  name="moq"
+                  value={formData.moq}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg py-2.5 px-4 outline-none focus:border-[#3c50e0]"
+                  min="1"
+                  required
+                />
               </div>
 
               {/* Units Selection */}

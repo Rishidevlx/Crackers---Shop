@@ -31,7 +31,7 @@ const AllProducts = () => {
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/products');
       const data = await response.json();
       if (data.success) {
         setProducts(data.data);
@@ -48,7 +48,7 @@ const AllProducts = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/categories');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/categories');
       const data = await response.json();
       if (data.success) {
         setCategories(data.data);
@@ -80,7 +80,7 @@ const AllProducts = () => {
 
     const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch('http://localhost:5000/api/products/bulk', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/products/bulk', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ const AllProducts = () => {
   const handleBulkStatus = async (status) => {
     const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch('http://localhost:5000/api/products/bulk-status', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/products/bulk-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const AllProducts = () => {
 
     const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -154,7 +154,7 @@ const AllProducts = () => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch('http://localhost:5000/api/products/bulk-status', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/products/bulk-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ const AllProducts = () => {
   const getImageUrl = (img) => {
     if (!img) return 'https://via.placeholder.com/50';
     if (img.startsWith('http')) return img;
-    return `http://localhost:5000${img}`;
+    return `${import.meta.env.VITE_API_URL}${img}`;
   };
 
   return (

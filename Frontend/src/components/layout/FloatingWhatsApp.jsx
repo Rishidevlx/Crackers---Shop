@@ -1,10 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
 
 const FloatingWhatsApp = () => {
+  const [whatsappInfo, setWhatsappInfo] = useState({ number: '', message: '' });
+
+  useEffect(() => {
+    fetch(import.meta.env.VITE_API_URL + '/api/cms/home')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data.whatsapp_settings) {
+          setWhatsappInfo({
+            number: data.data.whatsapp_settings.number || '',
+            message: data.data.whatsapp_settings.defaultMessage || ''
+          });
+        }
+      })
+      .catch(err => console.error('Error fetching whatsapp settings:', err));
+  }, []);
+
+  const encodedMessage = encodeURIComponent(whatsappInfo.message);
+  const waLink = whatsappInfo.number 
+    ? `https://wa.me/${whatsappInfo.number}?text=${encodedMessage}` 
+    : '#';
+
+  if (!whatsappInfo.number) return null; // Don't show if no number configured
+
   return (
     <a
-      href="https://wa.me/1234567890" // Replace with actual number
+      href={waLink}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-300 z-50 flex items-center justify-center group"

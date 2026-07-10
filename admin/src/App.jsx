@@ -10,6 +10,7 @@ import AddProduct from './pages/products/AddProduct';
 import AllProducts from './pages/products/AllProducts';
 
 import ProductOffers from './pages/offers/ProductOffers';
+import WhatsAppSettings from './pages/settings/WhatsAppSettings';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/edit/:id" element={<AddProduct />} />
           <Route path="offers" element={<ProductOffers />} />
+          <Route path="settings/whatsapp" element={<WhatsAppSettings />} />
           {/* Add more nested routes for CMS, Products, etc. here later */}
         </Route>
       </Routes>

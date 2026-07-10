@@ -22,7 +22,7 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/products/${id}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
         const data = await response.json();
         if (data.success) {
           const p = data.data;
@@ -79,9 +79,11 @@ const ProductDetails = () => {
             image: p.main_image,
             description: parsedDesc,
             subImages: subImages,
-            unit: parsedUnit
+            unit: parsedUnit,
+            moq: p.moq || 1
           });
           setActiveImage(p.main_image);
+          setQuantity(p.moq || 1);
         }
       } catch (error) {
         console.error('Failed to fetch product:', error);
@@ -92,7 +94,7 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
-  const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  const handleDecrease = () => setQuantity(prev => (prev > (product?.moq || 1) ? prev - 1 : (product?.moq || 1)));
   const handleIncrease = () => setQuantity(prev => prev + 1);
 
   if (loading) {
@@ -196,10 +198,11 @@ const ProductDetails = () => {
                   value={quantity}
                   onChange={(e) => {
                     const val = parseInt(e.target.value);
-                    setQuantity(isNaN(val) || val < 1 ? 1 : val);
+                    const minMoq = product?.moq || 1;
+                    setQuantity(isNaN(val) || val < minMoq ? minMoq : val);
                   }}
                   className="flex-1 h-full w-full text-center font-semibold text-gray-800 border-x border-gray-300 outline-none focus:border-brand appearance-none"
-                  min="1"
+                  min={product?.moq || 1}
                 />
                 <button onClick={handleIncrease} className="w-12 h-full flex items-center justify-center text-gray-600 hover:text-brand hover:bg-gray-50 transition-colors">
                   <FiPlus />
@@ -210,7 +213,7 @@ const ProductDetails = () => {
               <button 
                 onClick={() => {
                   addToCart(product, quantity);
-                  setQuantity(1);
+                  setQuantity(product?.moq || 1);
                 }}
                 className="flex-1 w-full h-12 bg-footer text-white rounded-md flex items-center justify-center gap-2 font-bold hover:bg-brand transition-colors shadow-md"
               >
@@ -218,6 +221,13 @@ const ProductDetails = () => {
                 ADD TO CART
               </button>
             </div>
+            
+            {/* MOQ Info */}
+            {product?.moq > 1 && (
+              <p className="text-sm text-brand font-medium mb-6 mt-[-10px]">
+                Minimum Order Quantity: {product.moq} {product.unit ? `per ${product.unit}` : 'items'}
+              </p>
+            )}
 
             {/* Wishlist & WhatsApp Buttons */}
             <div className="flex items-center gap-6 mb-8 text-sm font-semibold">
@@ -231,7 +241,40 @@ const ProductDetails = () => {
                 {isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
               </button>
               
-              <button className="flex items-center gap-2 text-[#25D366] hover:text-[#128C7E] transition-colors group">
+              <button 
+                onClick={async () => {
+                  try {
+                    const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
+                    const data = await res.json();
+                    const waNumber = data.data?.whatsapp_settings?.number || '';
+                    
+                    if (!waNumber) {
+                      alert('WhatsApp number not configured. Please try again later.');
+                      return;
+                    }
+
+                    let message = `Hi, I would like to order/inquire about this product:\n\n`;
+                    message += `*${product.name}*\n`;
+                    if (product.category) {
+                      message += `Category: ${product.category}\n`;
+                    }
+                    message += `Price: ₹${product.price.toFixed(2)}\n`;
+                    if (product.unit) {
+                      message += `Unit: per ${product.unit}\n`;
+                    }
+                    if (product.image) {
+                      message += `Link/Image: ${product.image}\n`;
+                    }
+
+                    const encodedMessage = encodeURIComponent(message);
+                    window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
+                  } catch (error) {
+                    console.error('Error with whatsapp enquiry:', error);
+                    alert('Something went wrong. Please try again.');
+                  }
+                }}
+                className="flex items-center gap-2 text-[#25D366] hover:text-[#128C7E] transition-colors group"
+              >
                 <div className="p-2 rounded-full border border-[#25D366] group-hover:border-[#128C7E]">
                   <FaWhatsapp className="text-lg" />
                 </div>

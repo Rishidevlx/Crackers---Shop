@@ -81,6 +81,7 @@ const initDB = async () => {
         is_offer_active BOOLEAN DEFAULT FALSE,
         offer_start_date DATETIME NULL,
         offer_end_date DATETIME NULL,
+        moq INT DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL

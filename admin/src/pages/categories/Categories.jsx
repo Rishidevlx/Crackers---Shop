@@ -120,7 +120,7 @@ const Categories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/categories');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/categories');
       const data = await response.json();
       if (data.success) {
         setCategories(data.data);
@@ -151,8 +151,8 @@ const Categories = () => {
 
     try {
       const url = editingId 
-        ? `http://localhost:5000/api/categories/${editingId}`
-        : 'http://localhost:5000/api/categories';
+        ? `${import.meta.env.VITE_API_URL}/api/categories/${editingId}`
+        : import.meta.env.VITE_API_URL + '/api/categories';
       
       const method = editingId ? 'PUT' : 'POST';
 
@@ -186,7 +186,7 @@ const Categories = () => {
 
     const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch(`http://localhost:5000/api/categories/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -241,7 +241,7 @@ const Categories = () => {
 
     const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch('http://localhost:5000/api/categories/reorder/bulk', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/categories/reorder/bulk', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

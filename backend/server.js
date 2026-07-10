@@ -61,7 +61,11 @@ app.post('/api/admin/login', (req, res) => {
 app.use('/api/cms/home', require('./routes/cmsRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

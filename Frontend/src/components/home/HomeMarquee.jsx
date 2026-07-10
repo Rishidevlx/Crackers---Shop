@@ -7,7 +7,7 @@ const HomeMarquee = () => {
   useEffect(() => {
     const fetchCMS = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/cms/home');
+        const response = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
         const data = await response.json();
         if (data.success && data.data.marquee_text) {
           setText(data.data.marquee_text);

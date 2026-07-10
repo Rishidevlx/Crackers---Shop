@@ -15,7 +15,7 @@ const HomeCMS = () => {
 
   const fetchCMSData = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/cms/home');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
       const data = await response.json();
       if (data.success) {
         if (data.data.marquee_text) setMarqueeText(data.data.marquee_text);
@@ -40,7 +40,7 @@ const HomeCMS = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5000/api/upload', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -75,7 +75,7 @@ const HomeCMS = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5000/api/cms/home', {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
