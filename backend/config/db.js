@@ -89,6 +89,43 @@ const initDB = async () => {
     `;
     await pool.query(createProductsTable);
 
+    const createWhatsAppEnquiriesTable = `
+      CREATE TABLE IF NOT EXISTS whatsapp_enquiries (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        mobile_number VARCHAR(15) NOT NULL,
+        cart_data JSON NULL,
+        status ENUM('New', 'Connected', 'Enquiry Success') DEFAULT 'New',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await pool.query(createWhatsAppEnquiriesTable);
+
+    // Create admins table
+    const createAdminsTable = `
+      CREATE TABLE IF NOT EXISTS admins (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) DEFAULT 'Administrator',
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'admin',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `;
+    await pool.query(createAdminsTable);
+
+    // Seed initial admin if not exists
+    const [adminRows] = await pool.query('SELECT COUNT(*) as count FROM admins');
+    if (adminRows[0].count === 0 && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+      await pool.query(
+        'INSERT INTO admins (name, email, password) VALUES (?, ?, ?)',
+        ['Super Admin', process.env.ADMIN_EMAIL, hashedPassword]
+      );
+      console.log('Initial admin user seeded successfully.');
+    }
+
     console.log('Successfully connected to TiDB Cluster and checked tables!');
     connection.release();
   } catch (err) {

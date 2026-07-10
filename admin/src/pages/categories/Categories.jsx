@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiMove, FiCheck, FiX, FiBox } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiMove, FiCheck, FiX, FiBox, FiImage } from 'react-icons/fi';
 import {
   DndContext,
   closestCenter,
@@ -60,6 +60,10 @@ const SortableCategoryItem = ({ category, onEdit, onDelete, parentName }) => {
           <FiMove />
         </div>
         
+        {category.image_url && (
+          <img src={category.image_url} alt={category.name} className="w-10 h-10 object-cover rounded-md border border-gray-200" />
+        )}
+
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-gray-800">{category.name}</h3>
@@ -102,6 +106,8 @@ const Categories = () => {
   const [name, setName] = useState('');
   const [parentId, setParentId] = useState('');
   const [status, setStatus] = useState('active');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   
   // For Editing
   const [editingId, setEditingId] = useState(null);
@@ -137,6 +143,43 @@ const Categories = () => {
     return parent ? parent.name : null;
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setIsUploading(true);
+    const toastId = toast.loading('Uploading category image...');
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setImageUrl(data.url);
+        toast.success('Image uploaded successfully', { id: toastId });
+      } else {
+        toast.error(data.message || 'Upload failed', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image', { id: toastId });
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return toast.error('Category name is required');
@@ -146,7 +189,8 @@ const Categories = () => {
     const payload = { 
       name, 
       parent_id: parentId ? parseInt(parentId) : null,
-      status
+      status,
+      image_url: imageUrl || null
     };
 
     try {
@@ -208,6 +252,7 @@ const Categories = () => {
     setName(category.name);
     setParentId(category.parent_id || '');
     setStatus(category.status);
+    setImageUrl(category.image_url || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -216,6 +261,7 @@ const Categories = () => {
     setName('');
     setParentId('');
     setStatus('active');
+    setImageUrl('');
   };
 
   // Drag and Drop End Handler
@@ -306,6 +352,42 @@ const Categories = () => {
                   ))}
                 </select>
                 <p className="text-[10px] text-gray-500 mt-1">Select a parent to make this a subcategory.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category Image (Optional)</label>
+                <div className="flex items-center gap-4">
+                  {imageUrl ? (
+                    <div className="relative w-20 h-20 rounded-md border border-gray-200 overflow-hidden shrink-0 group">
+                      <img src={imageUrl} alt="Category preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          type="button" 
+                          onClick={() => setImageUrl('')} 
+                          className="text-white hover:text-red-400"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 shrink-0 text-gray-400">
+                      <FiImage className="text-2xl" />
+                    </div>
+                  )}
+                  
+                  <label className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-3 px-4 text-sm font-medium text-gray-600 hover:text-[#3c50e0] hover:border-[#3c50e0] transition-colors cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <FiImage className="mb-1 text-lg" />
+                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleImageUpload} 
+                      disabled={isUploading}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div>

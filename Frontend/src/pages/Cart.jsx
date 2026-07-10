@@ -1,10 +1,105 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiTrash2, FiMinus, FiPlus, FiArrowLeft, FiShoppingBag } from 'react-icons/fi';
+import { FiTrash2, FiMinus, FiPlus, FiArrowLeft, FiShoppingBag, FiX } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
+import toast from 'react-hot-toast';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const [waSettings, setWaSettings] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch(import.meta.env.VITE_API_URL + '/api/cms/home')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data.whatsapp_settings) {
+          setWaSettings(data.data.whatsapp_settings);
+        }
+      })
+      .catch(err => console.error('Error fetching WA settings:', err));
+  }, []);
+
+  const generateWhatsAppUrl = (waNumber) => {
+    let message = "Hi, I would like to order/inquire about the following items:\n\n";
+    cartItems.forEach((item, index) => {
+      message += `${index + 1}. *${item.name}*\n`;
+      if (item.category) {
+        message += `   Category: ${item.category}\n`;
+      }
+      message += `   Price: ₹${item.price.toFixed(2)}\n`;
+      message += `   Qty: ${item.quantity} ${item.unit ? item.unit : ''}\n`;
+      if (item.image) {
+        message += `   Link/Image: ${item.image}\n`;
+      }
+      message += '\n';
+    });
+    message += `*Total Estimated Amount: ₹${cartTotal.toFixed(2)}*`;
+
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/${waNumber}?text=${encodedMessage}`;
+  };
+
+  const handleEnquiryClick = async () => {
+    try {
+      const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
+      const data = await res.json();
+      const currentWaSettings = data.data?.whatsapp_settings;
+      
+      if (!currentWaSettings?.number) {
+        toast.error('WhatsApp number not configured. Please try again later.');
+        return;
+      }
+      
+      setWaSettings(currentWaSettings);
+
+      // Check the latest toggle state
+      if (currentWaSettings.collect_mobile_number) {
+        setIsModalOpen(true);
+      } else {
+        window.open(generateWhatsAppUrl(currentWaSettings.number), '_blank');
+      }
+    } catch (error) {
+      console.error('Error fetching latest settings:', error);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
+
+  const handleMobileSubmit = async (e) => {
+    e.preventDefault();
+    if (mobileNumber.length !== 10 || isNaN(mobileNumber)) {
+      toast.error('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/enquiries/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mobile_number: mobileNumber,
+          cart_data: cartItems
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsModalOpen(false);
+        setMobileNumber('');
+        window.open(generateWhatsAppUrl(waSettings.number), '_blank');
+      } else {
+        toast.error('Failed to submit enquiry. Please try again.');
+      }
+    } catch (error) {
+      console.error('Enquiry error:', error);
+      toast.error('Network error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen py-12 font-body">
@@ -114,42 +209,10 @@ const Cart = () => {
                 </button>
                 
                 <button 
-                  onClick={async () => {
-                    try {
-                      const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
-                      const data = await res.json();
-                      const waNumber = data.data?.whatsapp_settings?.number || '';
-                      
-                      if (!waNumber) {
-                        alert('WhatsApp number not configured. Please try again later.');
-                        return;
-                      }
-
-                      let message = "Hi, I would like to order/inquire about the following items:\n\n";
-                      cartItems.forEach((item, index) => {
-                        message += `${index + 1}. *${item.name}*\n`;
-                        if (item.category) {
-                          message += `   Category: ${item.category}\n`;
-                        }
-                        message += `   Price: ₹${item.price.toFixed(2)}\n`;
-                        message += `   Qty: ${item.quantity} ${item.unit ? item.unit : ''}\n`;
-                        if (item.image) {
-                          message += `   Link/Image: ${item.image}\n`;
-                        }
-                        message += '\n';
-                      });
-                      message += `*Total Estimated Amount: ₹${cartTotal.toFixed(2)}*`;
-
-                      const encodedMessage = encodeURIComponent(message);
-                      window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
-                    } catch (error) {
-                      console.error('Error with whatsapp enquiry:', error);
-                      alert('Something went wrong. Please try again.');
-                    }
-                  }}
+                  onClick={handleEnquiryClick}
                   className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-lg transition-colors shadow-md flex justify-center items-center gap-2"
                 >
-                  <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" className="text-xl" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157.1zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"></path></svg>
+                  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" className="text-xl" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157.1zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"></path></svg>
                   WhatsApp Enquiry
                 </button>
                 
@@ -161,6 +224,56 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      {/* Modal for Mobile Number Collection */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden relative animate-fade-in-up">
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 bg-gray-100 p-1.5 rounded-full z-10 transition-colors"
+            >
+              <FiX />
+            </button>
+            <div className="p-6 sm:p-8 text-center pt-10">
+              <div className="w-16 h-16 bg-[#25D366]/10 text-[#25D366] rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <FiMessageCircle />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
+                WhatsApp Enquiry
+              </h2>
+              <p className="text-gray-600 mb-6 text-sm">
+                Please provide your mobile number before proceeding to WhatsApp.
+              </p>
+              <form onSubmit={handleMobileSubmit} className="flex flex-col gap-4">
+                <div className="flex bg-gray-50 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-shadow">
+                  <div className="flex items-center justify-center px-4 bg-gray-100 border-r border-gray-300 text-gray-700 font-semibold select-none">
+                    +91
+                  </div>
+                  <input 
+                    type="text" 
+                    value={mobileNumber}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 10) setMobileNumber(val);
+                    }}
+                    placeholder="Enter 10-digit number" 
+                    className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#25D366] text-white font-bold py-3.5 rounded-lg shadow-md hover:bg-[#128C7E] hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Processing...' : 'Proceed to WhatsApp'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

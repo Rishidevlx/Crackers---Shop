@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { 
   FiHome, FiBox, FiTag, FiPhone, FiMessageCircle, 
-  FiSettings, FiUser, FiChevronDown, FiChevronRight, FiLogOut, FiX 
+  FiSettings, FiUser, FiChevronDown, FiChevronRight, FiLogOut, FiX, FiMonitor
 } from 'react-icons/fi';
 import logo from '../../assets/logo-removebg-preview.png';
 
@@ -78,11 +78,12 @@ const Sidebar = ({ onClose }) => {
     },
     {
       title: 'Home page CMS',
-      icon: FiHome,
+      icon: FiMonitor,
       subItems: [
-        { title: 'Home CMS', to: '/dashboard/cms/home', onClick: onClose },
+        { title: 'Home Page', to: '/dashboard/cms/home', onClick: onClose },
         { title: 'Banner Slider', to: '/dashboard/cms/banner', onClick: onClose },
         { title: 'Latest Top Selling Product', to: '/dashboard/cms/top-selling', onClick: onClose },
+        { title: 'Footer', to: '/dashboard/cms/footer', onClick: onClose }
       ]
     },
     {
@@ -101,16 +102,14 @@ const Sidebar = ({ onClose }) => {
       subItems: [
         { title: 'WhatsApp Settings', to: '/dashboard/settings/whatsapp', onClick: onClose },
         { title: 'Contact Details', to: '/dashboard/contact/details', onClick: onClose },
-        { title: 'Social Media Links', to: '/dashboard/contact/social', onClick: onClose },
+        { title: 'Giftbox Floating', to: '/dashboard/contact/giftbox', onClick: onClose }
       ]
     },
     {
       title: 'Enquiries',
       icon: FiMessageCircle,
       subItems: [
-        { title: 'WhatsApp Enquiries', to: '/dashboard/enquiries/whatsapp', onClick: onClose },
-        { title: 'Customer Requests', to: '/dashboard/enquiries/customer', onClick: onClose },
-        { title: 'Bulk Order Request', to: '/dashboard/enquiries/bulk', onClick: onClose },
+        { title: 'WhatsApp Enquiries', to: '/dashboard/enquiries/whatsapp', onClick: onClose }
       ]
     },
     {
@@ -124,8 +123,8 @@ const Sidebar = ({ onClose }) => {
   ];
 
   const adminItems = [
-    { title: 'Profile', to: '/dashboard/profile', onClick: onClose },
-    { title: 'Change Password', to: '/dashboard/change-password', onClick: onClose },
+    { title: 'Profile', to: '/dashboard/account/profile', onClick: onClose },
+    { title: 'Change Password', to: '/dashboard/account/change-password', onClick: onClose },
   ];
 
   return (

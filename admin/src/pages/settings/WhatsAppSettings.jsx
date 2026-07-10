@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 const WhatsAppSettings = () => {
   const [settings, setSettings] = useState({
     number: '',
-    defaultMessage: 'Hi! I would like to know more about your products.'
+    defaultMessage: 'Hi! I would like to know more about your products.',
+    collect_mobile_number: false
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -142,6 +143,26 @@ const WhatsAppSettings = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
               ></textarea>
               <p className="text-xs text-gray-500 mt-1">This message will be pre-filled when a user clicks the floating WhatsApp icon on your website.</p>
+            </div>
+
+            {/* Collect Mobile Number Toggle */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div>
+                <label className="font-medium text-gray-800 block">Collect Mobile Number on Checkout</label>
+                <p className="text-sm text-gray-500 mt-0.5">If active, users will be prompted for their mobile number before redirecting to WhatsApp from the Cart.</p>
+              </div>
+              <label className="flex items-center cursor-pointer">
+                <div className="relative">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only" 
+                    checked={settings.collect_mobile_number}
+                    onChange={(e) => setSettings({...settings, collect_mobile_number: e.target.checked})}
+                  />
+                  <div className={`block w-12 h-7 rounded-full transition-colors ${settings.collect_mobile_number ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                  <div className={`dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform ${settings.collect_mobile_number ? 'transform translate-x-5' : ''}`}></div>
+                </div>
+              </label>
             </div>
           </div>
 

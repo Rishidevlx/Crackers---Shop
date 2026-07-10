@@ -24,9 +24,9 @@ const Shop = () => {
           // Map database structure to frontend expectations
           const formattedProducts = data.data.map(p => {
             let discount = null;
-            const orig = parseFloat(p.original_price);
+            const orig = p.is_offer_active ? parseFloat(p.original_price) : null;
             const curr = parseFloat(p.price);
-            if (orig > curr) {
+            if (orig && orig > curr) {
               discount = Math.round(((orig - curr) / orig) * 100);
             }
             

@@ -20,41 +20,18 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
+const enquiryRoutes = require('./routes/enquiryRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 app.use('/api/upload', uploadRoutes);
 app.use('/api/cms/home', cmsRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/enquiries', enquiryRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('AK Crackers Admin API is running!');
-});
-
-// Admin Login Endpoint
-app.post('/api/admin/login', (req, res) => {
-  const { email, password } = req.body;
-
-  // Check against .env values
-  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: 'admin1', email, role: 'admin' }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '24h' }
-    );
-    
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Login successful', 
-      token,
-      user: { email }
-    });
-  }
-
-  return res.status(401).json({ 
-    success: false, 
-    message: 'Invalid email or password' 
-  });
 });
 
 // New Routes

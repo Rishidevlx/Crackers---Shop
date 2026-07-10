@@ -1,10 +1,94 @@
-import React from 'react';
-import { FiShoppingCart, FiTrash2, FiMinus, FiPlus } from 'react-icons/fi';
+import React, { useState } from 'react';
+import { FiShoppingCart, FiTrash2, FiMinus, FiPlus, FiX } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
+import { FiMessageCircle } from 'react-icons/fi';
 import { useCart } from '../../context/CartContext';
+import toast from 'react-hot-toast';
 
 const CartSidebar = ({ isOpen, onClose }) => {
   const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const [waSettings, setWaSettings] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const generateWhatsAppUrl = (waNumber) => {
+    let message = "Hi, I would like to order/inquire about the following items:\n\n";
+    cartItems.forEach((item, index) => {
+      message += `${index + 1}. *${item.name}*\n`;
+      if (item.category) {
+        message += `   Category: ${item.category}\n`;
+      }
+      message += `   Price: ₹${item.price.toFixed(2)}\n`;
+      message += `   Qty: ${item.quantity} ${item.unit ? item.unit : ''}\n`;
+      if (item.image) {
+        message += `   Link/Image: ${item.image}\n`;
+      }
+      message += '\n';
+    });
+    message += `*Total Estimated Amount: ₹${cartTotal.toFixed(2)}*`;
+
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/${waNumber}?text=${encodedMessage}`;
+  };
+
+  const handleEnquiryClick = async () => {
+    try {
+      const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
+      const data = await res.json();
+      const currentWaSettings = data.data?.whatsapp_settings;
+      
+      if (!currentWaSettings?.number) {
+        toast.error('WhatsApp number not configured. Please try again later.');
+        return;
+      }
+      
+      setWaSettings(currentWaSettings);
+
+      if (currentWaSettings.collect_mobile_number) {
+        setIsModalOpen(true);
+      } else {
+        window.open(generateWhatsAppUrl(currentWaSettings.number), '_blank');
+      }
+    } catch (error) {
+      console.error('Error fetching latest settings:', error);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
+
+  const handleMobileSubmit = async (e) => {
+    e.preventDefault();
+    if (mobileNumber.length !== 10 || isNaN(mobileNumber)) {
+      toast.error('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/enquiries/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mobile_number: mobileNumber,
+          cart_data: cartItems
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setIsModalOpen(false);
+        setMobileNumber('');
+        window.open(generateWhatsAppUrl(waSettings.number), '_blank');
+      } else {
+        toast.error('Failed to submit enquiry. Please try again.');
+      }
+    } catch (error) {
+      console.error('Enquiry error:', error);
+      toast.error('Network error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -119,39 +203,7 @@ const CartSidebar = ({ isOpen, onClose }) => {
             </div>
             <p className="text-xs text-gray-500 mb-4 text-center">Taxes and shipping calculated at checkout</p>
             <button 
-              onClick={async () => {
-                try {
-                  const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
-                  const data = await res.json();
-                  const waNumber = data.data?.whatsapp_settings?.number || '';
-                  
-                  if (!waNumber) {
-                    alert('WhatsApp number not configured. Please try again later.');
-                    return;
-                  }
-
-                  let message = "Hi, I would like to order/inquire about the following items:\n\n";
-                  cartItems.forEach((item, index) => {
-                    message += `${index + 1}. *${item.name}*\n`;
-                    if (item.category) {
-                      message += `   Category: ${item.category}\n`;
-                    }
-                    message += `   Price: ₹${item.price.toFixed(2)}\n`;
-                    message += `   Qty: ${item.quantity} ${item.unit ? item.unit : ''}\n`;
-                    if (item.image) {
-                      message += `   Link/Image: ${item.image}\n`;
-                    }
-                    message += '\n';
-                  });
-                  message += `*Total Estimated Amount: ₹${cartTotal.toFixed(2)}*`;
-
-                  const encodedMessage = encodeURIComponent(message);
-                  window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
-                } catch (error) {
-                  console.error('Error with whatsapp enquiry:', error);
-                  alert('Something went wrong. Please try again.');
-                }
-              }}
+              onClick={handleEnquiryClick}
               className="w-full bg-[#25D366] text-white py-3 rounded-full font-bold hover:bg-[#128C7E] transition-colors shadow-md flex items-center justify-center gap-2"
             >
               <FaWhatsapp className="text-xl" />
@@ -160,6 +212,56 @@ const CartSidebar = ({ isOpen, onClose }) => {
           </div>
         )}
       </div>
+
+      {/* Modal for Mobile Number Collection */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4 font-body">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden relative animate-fade-in-up">
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 bg-gray-100 p-1.5 rounded-full z-10 transition-colors"
+            >
+              <FiX />
+            </button>
+            <div className="p-6 sm:p-8 text-center pt-10">
+              <div className="w-16 h-16 bg-[#25D366]/10 text-[#25D366] rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <FiMessageCircle />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
+                WhatsApp Enquiry
+              </h2>
+              <p className="text-gray-600 mb-6 text-sm">
+                Please provide your mobile number before proceeding to WhatsApp.
+              </p>
+              <form onSubmit={handleMobileSubmit} className="flex flex-col gap-4">
+                <div className="flex bg-gray-50 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-shadow">
+                  <div className="flex items-center justify-center px-4 bg-gray-100 border-r border-gray-300 text-gray-700 font-semibold select-none">
+                    +91
+                  </div>
+                  <input 
+                    type="text" 
+                    value={mobileNumber}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 10) setMobileNumber(val);
+                    }}
+                    placeholder="Enter 10-digit number" 
+                    className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#25D366] text-white font-bold py-3.5 rounded-lg shadow-md hover:bg-[#128C7E] hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Processing...' : 'Proceed to WhatsApp'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

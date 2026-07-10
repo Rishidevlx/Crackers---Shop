@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 // @route   POST /api/cms/home
 // @access  Private (Admin)
 router.post('/', protect, async (req, res) => {
-  const { marquee_text, hero_banners, whatsapp_settings } = req.body;
+  const { marquee_text, hero_banners, whatsapp_settings, contact_details, footer_cms, giftbox_settings } = req.body;
   
   try {
     const connection = await pool.getConnection();
@@ -56,6 +56,33 @@ router.post('/', protect, async (req, res) => {
          VALUES ('whatsapp_settings', ?) 
          ON DUPLICATE KEY UPDATE cms_value = ?`,
         [JSON.stringify(whatsapp_settings), JSON.stringify(whatsapp_settings)]
+      );
+    }
+
+    if (contact_details !== undefined) {
+      await connection.query(
+        `INSERT INTO home_cms (cms_key, cms_value) 
+         VALUES ('contact_details', ?) 
+         ON DUPLICATE KEY UPDATE cms_value = ?`,
+        [JSON.stringify(contact_details), JSON.stringify(contact_details)]
+      );
+    }
+
+    if (footer_cms !== undefined) {
+      await connection.query(
+        `INSERT INTO home_cms (cms_key, cms_value) 
+         VALUES ('footer_cms', ?) 
+         ON DUPLICATE KEY UPDATE cms_value = ?`,
+        [JSON.stringify(footer_cms), JSON.stringify(footer_cms)]
+      );
+    }
+
+    if (giftbox_settings !== undefined) {
+      await connection.query(
+        `INSERT INTO home_cms (cms_key, cms_value) 
+         VALUES ('giftbox_settings', ?) 
+         ON DUPLICATE KEY UPDATE cms_value = ?`,
+        [JSON.stringify(giftbox_settings), JSON.stringify(giftbox_settings)]
       );
     }
 

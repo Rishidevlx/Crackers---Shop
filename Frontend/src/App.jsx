@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar.jsx';
 import FloatingWhatsApp from './components/layout/FloatingWhatsApp.jsx';
+import FloatingCall from './components/layout/FloatingCall.jsx';
+import FloatingGift from './components/layout/FloatingGift.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
 import Footer from './components/layout/Footer.jsx';
 import Home from './pages/Home';
@@ -24,6 +26,8 @@ function App() {
       <div className="app-container">
         <Navbar />
         <FloatingWhatsApp />
+        <FloatingCall />
+        <FloatingGift />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />

@@ -1,8 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const Contact = () => {
+  const [contactDetails, setContactDetails] = useState({
+    address: '138, Srivilliputhur Street, Sivakasi, Tamil Nadu',
+    phone: '+91 93639 53616',
+    email: 'hari953616@gmail.com',
+    working_hours: 'Monday to Sunday: 9:00 AM - 9:00 PM',
+    map_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3936.141517032128!2d77.79524451478953!3d9.452668593226768!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06cee43b8210e3%3A0x868b446a2a07d4b4!2sSivakasi%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1689254125867!5m2!1sen!2sin'
+  });
+
+  useEffect(() => {
+    fetch(import.meta.env.VITE_API_URL + '/api/cms/home')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data.contact_details) {
+          setContactDetails(data.data.contact_details);
+        }
+      })
+      .catch(err => console.error('Error fetching contact details:', err));
+  }, []);
+
   return (
     <div className="font-body text-black min-h-screen bg-primary">
       
@@ -80,7 +99,7 @@ const Contact = () => {
                 <div className="text-brand text-xl mt-1"><FaMapMarkerAlt /></div>
                 <div>
                   <h4 className="font-bold text-gray-800 mb-1">Address :</h4>
-                  <p className="text-gray-600">138, Srivilliputhur Street,<br />Sivakasi, Tamil Nadu</p>
+                  <p className="text-gray-600 whitespace-pre-line">{contactDetails.address}</p>
                 </div>
               </div>
 
@@ -88,7 +107,7 @@ const Contact = () => {
                 <div className="text-brand text-xl mt-1"><FaPhoneAlt /></div>
                 <div>
                   <h4 className="font-bold text-gray-800 mb-1">Customer Service Number :</h4>
-                  <p className="text-gray-600">+91 93639 53616</p>
+                  <p className="text-gray-600">{contactDetails.phone}</p>
                 </div>
               </div>
 
@@ -96,7 +115,7 @@ const Contact = () => {
                 <div className="text-brand text-xl mt-1"><FaEnvelope /></div>
                 <div>
                   <h4 className="font-bold text-gray-800 mb-1">Mail :</h4>
-                  <a href="mailto:hari953616@gmail.com" className="text-brand hover:underline">hari953616@gmail.com</a>
+                  <a href={`mailto:${contactDetails.email}`} className="text-brand hover:underline">{contactDetails.email}</a>
                 </div>
               </div>
 
@@ -104,7 +123,7 @@ const Contact = () => {
                 <div className="text-brand text-xl mt-1"><FaClock /></div>
                 <div>
                   <h4 className="font-bold text-gray-800 mb-1">Opening Hours :</h4>
-                  <p className="text-gray-600">Monday to Sunday: 9:00 AM - 9:00 PM</p>
+                  <p className="text-gray-600">{contactDetails.working_hours}</p>
                 </div>
               </div>
             </div>
@@ -117,7 +136,7 @@ const Contact = () => {
       <section className="w-full">
         <iframe 
           title="AK Crackers Location"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3936.141517032128!2d77.79524451478953!3d9.452668593226768!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06cee43b8210e3%3A0x868b446a2a07d4b4!2sSivakasi%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1689254125867!5m2!1sen!2sin" 
+          src={contactDetails.map_url} 
           width="100%" 
           height="450" 
           style={{ border: 0 }} 
