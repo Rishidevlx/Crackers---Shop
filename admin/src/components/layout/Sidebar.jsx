@@ -81,7 +81,6 @@ const Sidebar = ({ onClose }) => {
       icon: FiMonitor,
       subItems: [
         { title: 'Home Page', to: '/dashboard/cms/home', onClick: onClose },
-        { title: 'Banner Slider', to: '/dashboard/cms/banner', onClick: onClose },
         { title: 'Latest Top Selling Product', to: '/dashboard/cms/top-selling', onClick: onClose },
         { title: 'Footer', to: '/dashboard/cms/footer', onClick: onClose }
       ]

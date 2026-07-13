@@ -20,7 +20,7 @@ const ProductOffers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  // Track edited products: { [productId]: { price, is_offer_active, offer_start_date, offer_end_date, hasErrors } }
+  // Track edited products: { [productId]: { offer_price, offer_moq, is_offer_active, offer_start_date, offer_end_date, hasErrors } }
   const [editedProducts, setEditedProducts] = useState({});
 
   useEffect(() => {
@@ -81,7 +81,8 @@ const ProductOffers = () => {
   const handleEditChange = (productId, field, value) => {
     const product = products.find(p => p.id === productId);
     const currentEdits = editedProducts[productId] || {
-      price: product.price,
+      offer_price: product.offer_price || product.price,
+      offer_moq: product.offer_moq || 1,
       is_offer_active: product.is_offer_active,
       offer_start_date: product.offer_start_date ? product.offer_start_date.substring(0, 16) : '',
       offer_end_date: product.offer_end_date ? product.offer_end_date.substring(0, 16) : '',
@@ -91,11 +92,11 @@ const ProductOffers = () => {
     
     // Validate
     let hasErrors = false;
-    const newPrice = parseFloat(newEdits.price);
-    const originalPrice = parseFloat(product.original_price);
+    const newPrice = parseFloat(newEdits.offer_price);
+    const originalPrice = parseFloat(product.price); // Normal selling price
     
     if (isNaN(newPrice) || newPrice < 0) hasErrors = true;
-    if (!isNaN(originalPrice) && newPrice >= originalPrice) hasErrors = true; // Selling price must be < Original Price
+    if (!isNaN(originalPrice) && newPrice >= originalPrice) hasErrors = true; // Offer price must be < Selling Price
 
     newEdits.hasErrors = hasErrors;
 
@@ -213,9 +214,9 @@ const ProductOffers = () => {
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
               <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Product</th>
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Original Price</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Selling Price</th>
               <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Offer Price</th>
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Discount</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Offer MOQ</th>
               <th className="p-4 text-xs font-semibold text-gray-500 uppercase text-center">Status</th>
               <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Schedule</th>
             </tr>
@@ -231,12 +232,13 @@ const ProductOffers = () => {
                 const isEdited = !!edits;
                 const hasErrors = edits?.hasErrors;
                 
-                const currentPrice = edits ? edits.price : product.price;
+                const currentPrice = edits ? edits.offer_price : (product.offer_price || product.price);
+                const currentMoq = edits ? edits.offer_moq : (product.offer_moq || 1);
                 const isActive = edits ? edits.is_offer_active : product.is_offer_active;
                 const startDate = edits ? edits.offer_start_date : (product.offer_start_date ? product.offer_start_date.substring(0, 16) : '');
                 const endDate = edits ? edits.offer_end_date : (product.offer_end_date ? product.offer_end_date.substring(0, 16) : '');
                 
-                const discountPct = calculateDiscount(product.original_price, currentPrice);
+                const discountPct = calculateDiscount(product.price, currentPrice);
 
                 return (
                   <tr key={product.id} className={`${isEdited ? 'bg-blue-50/30' : 'hover:bg-gray-50'} transition-colors`}>
@@ -255,7 +257,7 @@ const ProductOffers = () => {
                       </div>
                     </td>
                     <td className="p-4 font-medium text-gray-500">
-                      ₹{product.original_price || '-'}
+                      ₹{product.price || '-'}
                     </td>
                     <td className="p-4">
                       <div className="relative">
@@ -263,7 +265,7 @@ const ProductOffers = () => {
                         <input 
                           type="number" 
                           value={currentPrice}
-                          onChange={(e) => handleEditChange(product.id, 'price', e.target.value)}
+                          onChange={(e) => handleEditChange(product.id, 'offer_price', e.target.value)}
                           className={`w-28 pl-7 pr-2 py-1.5 rounded-md border text-sm focus:outline-none focus:ring-1 ${
                             hasErrors 
                               ? 'border-red-300 bg-red-50 text-red-700 focus:ring-red-500 focus:border-red-500' 
@@ -273,12 +275,15 @@ const ProductOffers = () => {
                       </div>
                     </td>
                     <td className="p-4">
-                      {discountPct > 0 ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">
-                          {discountPct}% OFF
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">No Offer</span>
+                      <input 
+                        type="number" 
+                        value={currentMoq}
+                        onChange={(e) => handleEditChange(product.id, 'offer_moq', e.target.value)}
+                        className="w-20 px-3 py-1.5 rounded-md border border-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-[#3c50e0] focus:border-[#3c50e0]"
+                        min="1"
+                      />
+                      {discountPct > 0 && (
+                        <div className="mt-1 text-[10px] text-green-600 font-bold">{discountPct}% OFF</div>
                       )}
                     </td>
                     <td className="p-4 text-center">
