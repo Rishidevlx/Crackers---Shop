@@ -9,7 +9,9 @@ const ShopTopBar = ({
   selectedCategories = [], 
   setSelectedCategories,
   sortOption = 'default',
-  setSortOption 
+  setSortOption,
+  viewMode = 'grid',
+  setViewMode
 }) => {
   const [categories, setCategories] = useState([]);
 
@@ -99,8 +101,14 @@ const ShopTopBar = ({
 
         {/* View Toggles */}
         <div className="flex gap-2 text-xl hidden sm:flex">
-          <FiGrid className="cursor-pointer text-gray-800" />
-          <FiList className="cursor-pointer text-gray-400 hover:text-gray-800 transition-colors" />
+          <FiGrid 
+            onClick={() => setViewMode && setViewMode('grid')}
+            className={`cursor-pointer transition-colors ${viewMode === 'grid' ? 'text-brand' : 'text-gray-400 hover:text-gray-800'}`} 
+          />
+          <FiList 
+            onClick={() => setViewMode && setViewMode('list')}
+            className={`cursor-pointer transition-colors ${viewMode === 'list' ? 'text-brand' : 'text-gray-400 hover:text-gray-800'}`} 
+          />
         </div>
 
         {/* Sorting Dropdown */}

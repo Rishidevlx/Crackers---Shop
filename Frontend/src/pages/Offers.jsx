@@ -5,7 +5,7 @@ import ShopTopBar from '../components/shop/ShopTopBar';
 import ProductCard from '../components/product/ProductCard';
 import Pagination from '../components/common/Pagination';
 
-const Shop = () => {
+const Offers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -22,11 +22,14 @@ const Shop = () => {
         const response = await fetch(import.meta.env.VITE_API_URL + '/api/products');
         const data = await response.json();
         if (data.success) {
+          // Filter out inactive offers first
+          const offerProducts = data.data.filter(p => p.is_offer_active === 1 || p.is_offer_active === true);
+          
           // Map database structure to frontend expectations
-          const formattedProducts = data.data.map(p => {
+          const formattedProducts = offerProducts.map(p => {
             let discount = null;
-            const orig = p.original_price ? parseFloat(p.original_price) : null;
-            const curr = parseFloat(p.price);
+            const orig = p.price ? parseFloat(p.price) : null;
+            const curr = p.offer_price ? parseFloat(p.offer_price) : orig;
             if (orig && orig > curr) {
               discount = Math.round(((orig - curr) / orig) * 100);
             }
@@ -52,6 +55,7 @@ const Shop = () => {
               originalPrice: orig || null,
               price: curr,
               discount: discount,
+              moq: p.offer_moq || 1, // Override moq for offers
               image: p.main_image
             };
           });
@@ -93,7 +97,7 @@ const Shop = () => {
   };
 
   return (
-    <main className="shop-page bg-gray-50 min-h-screen pb-16">
+    <main className="offers-page bg-gray-50 min-h-screen pb-16">
       <ShopBanner />
       
       <div className="max-w-7xl mx-auto px-5 md:px-12 pt-12 flex flex-col lg:flex-row">
@@ -126,7 +130,7 @@ const Shop = () => {
               ))
             ) : (
               <div className="col-span-full py-10 text-center text-gray-500 font-semibold">
-                No products found matching your filters.
+                No active offers found.
               </div>
             )}
           </div>
@@ -144,4 +148,4 @@ const Shop = () => {
   );
 };
 
-export default Shop;
+export default Offers;

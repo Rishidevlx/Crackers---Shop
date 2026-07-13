@@ -5,13 +5,15 @@ import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, viewMode = 'grid' }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product.id);
   const { addToCart } = useCart();
 
   return (
-    <div className="group flex flex-col bg-white rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden font-body relative border border-gray-100">
+    <div className={`group flex bg-white rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden font-body relative border border-gray-100 ${
+      viewMode === 'list' ? 'flex-row' : 'flex-col'
+    }`}>
       
       {/* Discount Badge */}
       {product.discount && (
@@ -33,7 +35,12 @@ const ProductCard = ({ product }) => {
       </button>
 
       {/* Product Image Link */}
-      <Link to={`/product/${product.id}`} className="relative w-full h-48 sm:h-56 bg-gray-50 flex items-center justify-center p-4 overflow-hidden block">
+      <Link 
+        to={`/product/${product.id}`} 
+        className={`relative bg-gray-50 flex items-center justify-center p-4 overflow-hidden block ${
+          viewMode === 'list' ? 'w-1/3 min-w-[150px] sm:min-w-[200px] border-r border-gray-100' : 'w-full h-48 sm:h-56'
+        }`}
+      >
         <img 
           src={product.image || 'https://via.placeholder.com/200'} 
           alt={product.name} 
@@ -45,9 +52,9 @@ const ProductCard = ({ product }) => {
       </Link>
 
       {/* Product Details */}
-      <div className="p-5 flex flex-col flex-1 text-center">
+      <div className={`p-5 flex flex-col flex-1 ${viewMode === 'list' ? 'justify-center text-left' : 'text-center'}`}>
         <Link to={`/product/${product.id}`}>
-          <h3 className="font-bold text-gray-800 text-base mb-1 hover:text-brand transition-colors line-clamp-1">
+          <h3 className={`font-bold text-gray-800 hover:text-brand transition-colors line-clamp-2 ${viewMode === 'list' ? 'text-lg md:text-xl mb-2' : 'text-base mb-1 line-clamp-1'}`}>
             {product.name}
           </h3>
         </Link>
@@ -59,7 +66,7 @@ const ProductCard = ({ product }) => {
         )}
 
         {/* Pricing */}
-        <div className="mt-auto mb-4 flex justify-center items-center gap-2">
+        <div className={`mt-auto mb-4 flex items-center gap-2 ${viewMode === 'list' ? 'justify-start mt-4' : 'justify-center'}`}>
           {product.originalPrice && (
             <span className="text-sm text-gray-400 line-through">
               ₹{product.originalPrice.toFixed(2)}
@@ -71,13 +78,15 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Add to Cart Button */}
-        <button 
-          onClick={() => addToCart(product, product.moq || 1)}
-          className="w-full bg-footer text-white py-2.5 rounded-full flex items-center justify-center gap-2 font-semibold text-sm hover:bg-brand transition-colors duration-300"
-        >
-          <FiShoppingCart />
-          ADD TO CART
-        </button>
+        <div className={`${viewMode === 'list' ? 'w-48 max-w-full' : 'w-full'}`}>
+          <button 
+            onClick={() => addToCart(product, product.moq || 1)}
+            className="w-full bg-footer text-white py-2.5 rounded-full flex items-center justify-center gap-2 font-semibold text-sm hover:bg-brand transition-colors duration-300"
+          >
+            <FiShoppingCart />
+            ADD TO CART
+          </button>
+        </div>
       </div>
     </div>
   );
