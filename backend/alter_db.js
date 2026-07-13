@@ -12,7 +12,7 @@ async function run() {
   });
   
   try {
-    await pool.query("ALTER TABLE whatsapp_enquiries ADD COLUMN status ENUM('New', 'Connected', 'Enquiry Success') DEFAULT 'New';");
+    await pool.query("ALTER TABLE products ADD COLUMN offer_price DECIMAL(10, 2) NULL, ADD COLUMN offer_moq INT DEFAULT 1;");
     console.log('ALTER done');
   } catch (e) {
     if (e.message.includes('Duplicate column name')) {

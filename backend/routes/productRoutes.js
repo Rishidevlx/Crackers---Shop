@@ -73,18 +73,20 @@ router.put('/bulk-update-offers', protect, async (req, res) => {
 
     try {
       for (const offer of offers) {
-        const { id, price, is_offer_active, offer_start_date, offer_end_date } = offer;
+        const { id, offer_price, offer_moq, is_offer_active, offer_start_date, offer_end_date } = offer;
         
         await connection.query(`
           UPDATE products 
           SET 
-            price = ?, 
+            offer_price = ?, 
+            offer_moq = ?,
             is_offer_active = ?, 
             offer_start_date = ?, 
             offer_end_date = ?
           WHERE id = ?
         `, [
-          price, 
+          offer_price || null,
+          offer_moq ? parseInt(offer_moq) : 1, 
           is_offer_active ? 1 : 0, 
           offer_start_date || null, 
           offer_end_date || null, 
@@ -102,6 +104,45 @@ router.put('/bulk-update-offers', protect, async (req, res) => {
     }
   } catch (error) {
     console.error('Error bulk updating offers:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
+// @route   PUT /api/products/top-selling
+// @desc    Update top selling products
+// @access  Private (Admin)
+router.put('/top-selling', protect, async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    
+    if (!Array.isArray(productIds)) {
+      return res.status(400).json({ success: false, message: 'productIds must be an array' });
+    }
+
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Reset all
+      await connection.query('UPDATE products SET is_top_selling = FALSE, top_selling_order = 0');
+      
+      // Update selected
+      if (productIds.length > 0) {
+        for (let i = 0; i < productIds.length; i++) {
+          await connection.query('UPDATE products SET is_top_selling = TRUE, top_selling_order = ? WHERE id = ?', [i, productIds[i]]);
+        }
+      }
+      
+      await connection.commit();
+      connection.release();
+      res.json({ success: true, message: 'Top selling products updated successfully' });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error updating top selling products:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 });
@@ -177,6 +218,25 @@ router.get('/', async (req, res) => {
 });
 
 
+
+// @route   GET /api/products/top-selling
+// @desc    Get top selling products
+// @access  Public
+router.get('/top-selling', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT p.*, c.name as category_name 
+      FROM products p 
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.is_top_selling = TRUE
+      ORDER BY p.top_selling_order ASC
+    `);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error fetching top selling products:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
 
 // @route   GET /api/products/:id
 // @desc    Get product by ID
