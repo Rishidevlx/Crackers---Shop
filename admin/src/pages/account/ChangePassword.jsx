@@ -2,6 +2,33 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FiLock, FiSave, FiEye, FiEyeOff, FiShield } from 'react-icons/fi';
 
+const PasswordInput = ({ label, name, value, onChange, show, setShow, placeholder }) => (
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <FiLock className="text-gray-400" />
+      </div>
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={onChange}
+        name={name}
+        className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors"
+        placeholder={placeholder}
+        required
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-brand transition-colors"
+      >
+        {show ? <FiEyeOff /> : <FiEye />}
+      </button>
+    </div>
+  </div>
+);
+
 const ChangePassword = () => {
   const [formData, setFormData] = useState({
     currentPassword: '',
@@ -59,32 +86,6 @@ const ChangePassword = () => {
     }
   };
 
-  const PasswordInput = ({ label, name, value, show, setShow, placeholder }) => (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <FiLock className="text-gray-400" />
-        </div>
-        <input
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}
-          className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors"
-          placeholder={placeholder}
-          required
-        />
-        <button
-          type="button"
-          onClick={() => setShow(!show)}
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-brand transition-colors"
-        >
-          {show ? <FiEyeOff /> : <FiEye />}
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="p-6 max-w-2xl">
       <div className="mb-6">
@@ -102,6 +103,7 @@ const ChangePassword = () => {
             label="Current Password"
             name="currentPassword"
             value={formData.currentPassword}
+            onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
             show={showCurrent}
             setShow={setShowCurrent}
             placeholder="Enter current password"
@@ -113,6 +115,7 @@ const ChangePassword = () => {
             label="New Password"
             name="newPassword"
             value={formData.newPassword}
+            onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
             show={showNew}
             setShow={setShowNew}
             placeholder="Enter new password"
@@ -122,6 +125,7 @@ const ChangePassword = () => {
             label="Confirm New Password"
             name="confirmPassword"
             value={formData.confirmPassword}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             show={showConfirm}
             setShow={setShowConfirm}
             placeholder="Confirm new password"
