@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaPhoneAlt } from 'react-icons/fa';
+import { useCart } from '../../context/CartContext';
 
 const FloatingCall = () => {
   const [callNumber, setCallNumber] = useState('');
+  const { isCartOpen } = useCart();
 
   useEffect(() => {
     fetch(import.meta.env.VITE_API_URL + '/api/cms/home')
@@ -15,7 +17,7 @@ const FloatingCall = () => {
       .catch(err => console.error('Error fetching contact details:', err));
   }, []);
 
-  if (!callNumber) return null; // Don't show if no number configured
+  if (!callNumber || isCartOpen) return null; // Don't show if no number configured or cart is open
 
   return (
     <a

@@ -9,14 +9,13 @@ import CartSidebar from '../cart/CartSidebar';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [allProducts, setAllProducts] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   
   const location = useLocation();
   const { wishlistCount } = useWishlist();
-  const { cartCount, cartTotal } = useCart();
+  const { cartCount, cartTotal, isCartOpen, setIsCartOpen } = useCart();
   
   // Dynamic Marquee
   const [marqueeText, setMarqueeText] = useState('🎉 HUGE DIWALI SALE IS LIVE! GET FLAT 50% DISCOUNT ON ALL CRACKERS 🔥');

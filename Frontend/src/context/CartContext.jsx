@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem('cartItems');
@@ -56,7 +57,7 @@ export const CartProvider = ({ children }) => {
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, isCartOpen, setIsCartOpen }}>
       {children}
     </CartContext.Provider>
   );

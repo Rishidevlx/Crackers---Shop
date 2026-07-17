@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
+import { useCart } from '../../context/CartContext';
 
 const FloatingWhatsApp = () => {
   const [whatsappInfo, setWhatsappInfo] = useState({ number: '', message: '' });
+  const { isCartOpen } = useCart();
 
   useEffect(() => {
     fetch(import.meta.env.VITE_API_URL + '/api/cms/home')
@@ -23,7 +25,7 @@ const FloatingWhatsApp = () => {
     ? `https://wa.me/${whatsappInfo.number}?text=${encodedMessage}` 
     : '#';
 
-  if (!whatsappInfo.number) return null; // Don't show if no number configured
+  if (!whatsappInfo.number || isCartOpen) return null; // Don't show if no number configured or cart is open
 
   return (
     <a

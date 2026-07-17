@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaGift, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { useCart } from '../../context/CartContext';
 
 const FloatingGift = () => {
+  const { isCartOpen } = useCart();
   const [giftConfig, setGiftConfig] = useState({
     isActive: false,
     image: '',
@@ -23,7 +25,7 @@ const FloatingGift = () => {
       .catch(err => console.error('Error fetching giftbox settings:', err));
   }, []);
 
-  if (!giftConfig.isActive) return null;
+  if (!giftConfig.isActive || isCartOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
