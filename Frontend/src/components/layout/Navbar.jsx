@@ -9,9 +9,6 @@ import CartSidebar from '../cart/CartSidebar';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [allProducts, setAllProducts] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
   
   const location = useLocation();
   const { wishlistCount } = useWishlist();
@@ -20,35 +17,6 @@ const Navbar = () => {
   // Dynamic Marquee
   const [marqueeText, setMarqueeText] = useState('🎉 HUGE DIWALI SALE IS LIVE! GET FLAT 50% DISCOUNT ON ALL CRACKERS 🔥');
 
-  // Fetch all products for search
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(import.meta.env.VITE_API_URL + '/api/products');
-        const data = await response.json();
-        if (data.success) {
-          setAllProducts(data.data.filter(p => p.status === 'active'));
-        }
-      } catch (err) {
-        console.error('Failed to fetch products for search:', err);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  // Handle Search Input
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setSearchResults([]);
-    } else {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(lowerCaseQuery) || 
-        (p.category_name && p.category_name.toLowerCase().includes(lowerCaseQuery))
-      ).slice(0, 5); // top 5 suggestions
-      setSearchResults(filtered);
-    }
-  }, [searchQuery, allProducts]);
 
   useEffect(() => {
     const fetchCMS = async () => {
@@ -66,7 +34,7 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
+    { name: 'Home', path: '/home' },
     { name: 'Shop', path: '/shop' },
     { name: 'Offers', path: '/offers', highlight: true },
     { name: 'About Us', path: '/about' },
@@ -107,7 +75,7 @@ const Navbar = () => {
 
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center justify-center lg:justify-start w-full lg:w-auto absolute lg:static left-0 pointer-events-none lg:pointer-events-auto">
-                <Link to="/" className="flex items-center gap-2 pointer-events-auto">
+                <Link to="/home" className="flex items-center gap-2 pointer-events-auto">
                   <img src={logo} alt="AK Crackers" className="h-12 md:h-16 w-auto drop-shadow-sm hover:scale-105 transition-transform duration-300" />
                   <div className="hidden sm:block">
                     <h1 className="text-xl md:text-2xl font-heading font-extrabold text-brand tracking-wider uppercase leading-tight">
@@ -144,54 +112,6 @@ const Navbar = () => {
 
               {/* Right Icons & Search */}
               <div className="flex items-center space-x-3 md:space-x-4 z-10">
-                
-                {/* Static Search Bar (Hidden on very small screens) */}
-                <div className="hidden sm:block relative w-48 xl:w-56">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search crackers..."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-4 pr-10 outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all text-sm font-medium text-gray-700 placeholder-gray-400 shadow-inner"
-                    />
-                    <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  </div>
-                  
-                  {/* Search Dropdown */}
-                  {searchQuery.trim() !== '' && (
-                    <div className="absolute right-0 top-full mt-2 w-72 lg:w-full bg-white shadow-2xl rounded-xl border border-gray-100 overflow-hidden z-50 animate-fade-in">
-                      <div className="max-h-80 overflow-y-auto">
-                        {searchResults.length > 0 ? (
-                          <div className="py-2">
-                            {searchResults.map(product => (
-                              <Link 
-                                key={product.id} 
-                                to={`/product/${product.id}`}
-                                onClick={() => setSearchQuery('')}
-                                className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
-                              >
-                                <img 
-                                  src={product.main_image || 'https://via.placeholder.com/50'} 
-                                  alt={product.name} 
-                                  className="w-10 h-10 object-cover rounded shadow-sm border border-gray-100"
-                                />
-                                <div className="flex-1">
-                                  <h4 className="text-sm font-bold text-gray-800 line-clamp-1">{product.name}</h4>
-                                  <p className="text-xs text-brand font-semibold">₹{Number(product.price || 0).toFixed(2)}</p>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="p-4 text-center text-sm text-gray-500 font-medium">
-                            No products found.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
                 
                 {/* Wishlist Icon */}
                 <Link to="/wishlist" className="text-gray-700 hover:text-brand transition-colors relative group transition-transform duration-300 hover:scale-110">

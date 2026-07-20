@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar.jsx';
 import FloatingWhatsApp from './components/layout/FloatingWhatsApp.jsx';
 import FloatingCall from './components/layout/FloatingCall.jsx';
@@ -29,7 +29,8 @@ function App() {
         <FloatingCall />
         <FloatingGift />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/shop" />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/offers" element={<Offers />} />
           <Route path="/product/:id" element={<ProductDetails />} />

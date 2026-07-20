@@ -96,7 +96,7 @@ const Shop = () => {
     <main className="shop-page bg-gray-50 min-h-screen pb-16">
       <ShopBanner />
       
-      <div className="max-w-7xl mx-auto px-5 md:px-12 pt-12 flex flex-col lg:flex-row">
+      <div className="max-w-7xl mx-auto px-5 md:px-12 pt-12 flex flex-col relative">
         {/* Sidebar */}
         <ShopSidebar 
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
@@ -106,7 +106,7 @@ const Shop = () => {
         />
 
         {/* Main Content */}
-        <div className="w-full lg:w-3/4">
+        <div className="w-full">
           <ShopTopBar 
             itemsPerPage={itemsPerPage}
             setItemsPerPage={handleItemsPerPageChange}
@@ -118,14 +118,45 @@ const Shop = () => {
             setViewMode={setViewMode}
           />
 
-          {/* Product Grid */}
-          <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-6"}>
+          {/* Product Grid / List */}
+          <div className="w-full">
             {sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 ? (
-              sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((product) => (
-                <ProductCard key={product.id} product={product} viewMode={viewMode} />
-              ))
+              <div className="flex flex-col gap-8">
+                {viewMode === 'list' && (
+                  <div className="grid grid-cols-12 gap-2 bg-[#FFC107] text-gray-900 font-bold text-[10px] sm:text-sm py-3 px-2 mb-[-1.5rem] text-center uppercase border-b-[3px] border-brand sticky top-[60px] md:top-20 z-20">
+                    <div className="col-span-2 sm:col-span-1">Image</div>
+                    <div className="col-span-4 sm:col-span-5 text-left pl-2">Products</div>
+                    <div className="col-span-2 sm:col-span-2">Price</div>
+                    <div className="col-span-2 sm:col-span-2">Qty</div>
+                    <div className="col-span-2 sm:col-span-2">Amount</div>
+                  </div>
+                )}
+                
+                {Object.entries(
+                  sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).reduce((acc, product) => {
+                    const cat = product.category || 'Uncategorized';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(product);
+                    return acc;
+                  }, {})
+                ).map(([category, prods]) => (
+                  <div key={category} className="flex flex-col">
+                    {/* Category Header */}
+                    <div className="w-full text-center text-white font-bold py-2 px-4 uppercase tracking-wider mb-4 shadow-sm text-sm bg-brand">
+                      {category}
+                    </div>
+                    
+                    {/* Products Container */}
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" : "flex flex-col border border-gray-200 bg-white"}>
+                      {prods.map(product => (
+                        <ProductCard key={product.id} product={product} viewMode={viewMode} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <div className="col-span-full py-10 text-center text-gray-500 font-semibold">
+              <div className="col-span-full py-10 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">
                 No products found matching your filters.
               </div>
             )}

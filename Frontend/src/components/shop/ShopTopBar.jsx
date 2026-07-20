@@ -38,7 +38,7 @@ const ShopTopBar = ({
       {/* Breadcrumbs & Categories Dropdown */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center">
-          <Link to="/" className="hover:text-brand transition-colors">Home</Link>
+          <Link to="/home" className="hover:text-brand transition-colors">Home</Link>
           <span className="mx-2">/</span>
           <span className="text-gray-900 font-semibold">Shop</span>
         </div>
@@ -81,23 +81,7 @@ const ShopTopBar = ({
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full md:w-auto">
-        {/* Show Items Count */}
-        <div className="flex items-center bg-white border border-gray-100 rounded-full px-4 py-1.5 shadow-sm">
-          <span className="mr-3 font-medium text-gray-500">Show:</span>
-          <div className="flex gap-1 items-center">
-            {perPageOptions.map((opt, index) => (
-              <React.Fragment key={opt}>
-                <span 
-                  onClick={() => setItemsPerPage && setItemsPerPage(opt)}
-                  className={`cursor-pointer px-2 py-0.5 rounded-full transition-colors ${itemsPerPage === opt ? 'bg-brand text-white font-bold' : 'hover:bg-gray-100 text-gray-600'}`}
-                >
-                  {opt}
-                </span>
-                {index < perPageOptions.length - 1 && <span className="text-gray-300">/</span>}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
+
 
         {/* View Toggles */}
         <div className="flex gap-2 text-xl hidden sm:flex">

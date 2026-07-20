@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiShoppingCart, FiHeart } from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -9,82 +9,120 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product.id);
   const { addToCart } = useCart();
+  const [qty, setQty] = useState('');
+
+  const handleQtyChange = (e) => {
+    const val = parseInt(e.target.value);
+    if (!isNaN(val) && val > 0) {
+      setQty(val);
+    } else if (e.target.value === '') {
+      setQty('');
+    }
+  };
+
+  const increment = () => setQty((prev) => (prev === '' ? 1 : prev + 1));
+  const decrement = () => setQty((prev) => (prev > 1 ? prev - 1 : 1));
+
+  if (viewMode === 'list') {
+    return (
+      <div className="grid grid-cols-12 gap-2 items-center bg-white border-b border-gray-200 py-3 px-2 hover:bg-gray-50 transition-colors text-sm">
+        <div className="col-span-2 sm:col-span-1 flex justify-center">
+          <Link to={`/product/${product.id}`}>
+            <img 
+              src={product.image || 'https://via.placeholder.com/50'} 
+              alt={product.name} 
+              className="w-12 h-12 object-contain border border-gray-200 p-1 bg-white rounded shadow-sm"
+            />
+          </Link>
+        </div>
+        <div className="col-span-4 sm:col-span-5">
+          <Link to={`/product/${product.id}`}>
+            <h3 className="font-semibold text-gray-800 line-clamp-2">{product.name}</h3>
+            {product.description && (
+              <p className="text-xs text-brand mt-0.5">{product.description}</p>
+            )}
+          </Link>
+        </div>
+        <div className="col-span-2 sm:col-span-2 text-center">
+          {product.originalPrice && (
+            <div className="text-xs text-red-500 line-through">₹{product.originalPrice}</div>
+          )}
+          <div className="font-bold text-green-600">₹{product.price}</div>
+        </div>
+        <div className="col-span-2 sm:col-span-2 flex justify-center">
+          <div className="flex items-center border border-gray-300 rounded bg-white overflow-hidden h-8 w-20 sm:w-24">
+             <button onClick={decrement} className="px-2 text-gray-600 hover:bg-gray-100 h-full font-bold">-</button>
+             <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-xs outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal" />
+             <button onClick={increment} className="px-2 text-gray-600 hover:bg-gray-100 h-full font-bold">+</button>
+          </div>
+        </div>
+        <div className="col-span-2 sm:col-span-2 flex items-center justify-between font-bold text-gray-700">
+          <span className="hidden sm:inline-block">₹{((qty || 0) * product.price).toFixed(0)}</span>
+          <button 
+            onClick={() => addToCart(product, qty || 1)}
+            className="bg-brand hover:bg-brand/90 text-white px-4 py-1.5 rounded ml-auto shadow-sm transition-colors flex items-center justify-center"
+          >
+            <FiShoppingCart className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`group flex bg-white rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden font-body relative border border-gray-100 ${
-      viewMode === 'list' ? 'flex-row' : 'flex-col'
-    }`}>
+    <div className="flex bg-primary border border-gray-200 rounded-lg overflow-hidden relative shadow-sm hover:shadow-md transition-shadow h-36 sm:h-40">
       
       {/* Discount Badge */}
       {product.discount && (
-        <div className="absolute top-3 left-3 bg-[#F8B400] text-white text-xs font-bold px-2 py-1 rounded-full z-20 shadow-sm">
-          -{product.discount}%
+        <div className="absolute top-0 left-0 bg-brand text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-lg z-10">
+          {product.discount}%
         </div>
       )}
 
-      {/* Wishlist Heart Icon */}
-      <button 
-        onClick={() => toggleWishlist(product)}
-        className="absolute top-3 right-3 z-20 text-gray-400 hover:text-brand hover:scale-110 transition-all duration-300 bg-white p-2 rounded-full shadow-sm hover:shadow-md"
-      >
-        {isWishlisted ? (
-          <FaHeart className="text-lg text-brand" />
-        ) : (
-          <FiHeart className="text-lg" />
-        )}
-      </button>
-
-      {/* Product Image Link */}
+      {/* Image Side */}
       <Link 
         to={`/product/${product.id}`} 
-        className={`relative bg-gray-50 flex items-center justify-center p-4 overflow-hidden block ${
-          viewMode === 'list' ? 'w-1/3 min-w-[150px] sm:min-w-[200px] border-r border-gray-100' : 'w-full h-48 sm:h-56'
-        }`}
+        className="w-[40%] relative flex items-center justify-center p-3 bg-gradient-to-br from-green-700 to-green-800"
       >
         <img 
           src={product.image || 'https://via.placeholder.com/200'} 
           alt={product.name} 
-          className="max-h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out drop-shadow-md"
+          className="w-full h-full max-h-40 object-contain rounded drop-shadow-md group-hover:scale-105 transition-transform"
         />
-        
-        {/* Overlay Action (optional, keeping it simple for now) */}
-        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </Link>
 
-      {/* Product Details */}
-      <div className={`p-5 flex flex-col flex-1 ${viewMode === 'list' ? 'justify-center text-left' : 'text-center'}`}>
+      {/* Details Side */}
+      <div className="w-[60%] p-3 sm:p-4 flex flex-col justify-between">
         <Link to={`/product/${product.id}`}>
-          <h3 className={`font-bold text-gray-800 hover:text-brand transition-colors line-clamp-2 ${viewMode === 'list' ? 'text-lg md:text-xl mb-2' : 'text-base mb-1 line-clamp-1'}`}>
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
             {product.name}
           </h3>
         </Link>
         
-        {product.description && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-            {product.description}
-          </p>
-        )}
-
         {/* Pricing */}
-        <div className={`mt-auto mb-4 flex items-center gap-2 ${viewMode === 'list' ? 'justify-start mt-4' : 'justify-center'}`}>
+        <div className="mt-2 text-center text-sm">
           {product.originalPrice && (
-            <span className="text-sm text-gray-400 line-through">
-              ₹{product.originalPrice.toFixed(2)}
-            </span>
+            <div className="text-red-500 line-through text-xs font-semibold">
+              ₹{product.originalPrice} / 1Pkt
+            </div>
           )}
-          <span className="text-lg font-bold text-[#F8B400]">
-            ₹{product.price.toFixed(2)}
-          </span>
+          <div className="font-extrabold text-gray-900">
+            ₹{product.price} / 1Pkt
+          </div>
         </div>
 
-        {/* Add to Cart Button */}
-        <div className={`${viewMode === 'list' ? 'w-48 max-w-full' : 'w-full'}`}>
+        {/* Action Row */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center border border-gray-300 rounded overflow-hidden bg-white h-8 w-16 sm:w-24">
+             <button onClick={decrement} className="px-2 text-brand font-bold hover:bg-gray-100 h-full">-</button>
+             <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-xs outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal font-semibold text-gray-700" />
+             <button onClick={increment} className="px-2 text-brand font-bold hover:bg-gray-100 h-full">+</button>
+          </div>
           <button 
-            onClick={() => addToCart(product, product.moq || 1)}
-            className="w-full bg-footer text-white py-2.5 rounded-full flex items-center justify-center gap-2 font-semibold text-sm hover:bg-brand transition-colors duration-300"
+            onClick={() => addToCart(product, qty || 1)}
+            className="bg-brand text-white px-3 sm:px-4 py-1.5 rounded-md shadow hover:bg-brand/90 transition-colors flex items-center justify-center"
           >
-            <FiShoppingCart />
-            ADD TO CART
+            <FiShoppingCart className="h-4 w-4" />
           </button>
         </div>
       </div>
