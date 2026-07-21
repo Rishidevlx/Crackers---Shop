@@ -80,11 +80,11 @@ const ShopTopBar = ({
         </DropdownMenu.Root>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full md:w-auto">
+      <div className="flex flex-row justify-between items-center gap-4 sm:gap-8 w-full md:w-auto mt-2 md:mt-0 border-t border-gray-100 md:border-none pt-4 md:pt-0">
 
 
         {/* View Toggles */}
-        <div className="flex gap-2 text-xl hidden sm:flex">
+        <div className="flex gap-2 text-xl">
           <FiGrid 
             onClick={() => setViewMode && setViewMode('grid')}
             className={`cursor-pointer transition-colors ${viewMode === 'grid' ? 'text-brand' : 'text-gray-400 hover:text-gray-800'}`} 

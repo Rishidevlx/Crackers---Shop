@@ -35,7 +35,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
             />
           </Link>
         </div>
-        <div className="col-span-4 sm:col-span-5">
+        <div className="col-span-3 sm:col-span-5">
           <Link to={`/product/${product.id}`}>
             <h3 className="font-semibold text-gray-800 line-clamp-2">{product.name}</h3>
             {product.description && (
@@ -49,8 +49,8 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
           )}
           <div className="font-bold text-green-600">₹{product.price}</div>
         </div>
-        <div className="col-span-2 sm:col-span-2 flex justify-center">
-          <div className="flex items-center border border-gray-300 rounded bg-white overflow-hidden h-8 w-20 sm:w-24">
+        <div className="col-span-3 sm:col-span-2 flex justify-center">
+          <div className="flex items-center border border-gray-300 rounded bg-white overflow-hidden h-8 w-20 sm:w-24 shrink-0">
              <button onClick={decrement} className="px-2 text-gray-600 hover:bg-gray-100 h-full font-bold">-</button>
              <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-xs outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal" />
              <button onClick={increment} className="px-2 text-gray-600 hover:bg-gray-100 h-full font-bold">+</button>
@@ -60,7 +60,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
           <span className="hidden sm:inline-block">₹{((qty || 0) * product.price).toFixed(0)}</span>
           <button 
             onClick={() => addToCart(product, qty || 1)}
-            className="bg-brand hover:bg-brand/90 text-white px-4 py-1.5 rounded ml-auto shadow-sm transition-colors flex items-center justify-center"
+            className="bg-brand hover:bg-brand/90 text-white px-2 sm:px-4 py-1.5 rounded ml-auto shadow-sm transition-colors flex items-center justify-center"
           >
             <FiShoppingCart className="h-4 w-4" />
           </button>
@@ -112,8 +112,8 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
         </div>
 
         {/* Action Row */}
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center border border-gray-300 rounded overflow-hidden bg-white h-8 w-16 sm:w-24">
+        <div className="flex items-center justify-between mt-3 gap-2">
+          <div className="flex items-center border border-gray-300 rounded overflow-hidden bg-white h-8 w-24 sm:w-28 shrink-0">
              <button onClick={decrement} className="px-2 text-brand font-bold hover:bg-gray-100 h-full">-</button>
              <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-xs outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal font-semibold text-gray-700" />
              <button onClick={increment} className="px-2 text-brand font-bold hover:bg-gray-100 h-full">+</button>

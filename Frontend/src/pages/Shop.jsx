@@ -125,9 +125,9 @@ const Shop = () => {
                 {viewMode === 'list' && (
                   <div className="grid grid-cols-12 gap-2 bg-[#FFC107] text-gray-900 font-bold text-[10px] sm:text-sm py-3 px-2 mb-[-1.5rem] text-center uppercase border-b-[3px] border-brand sticky top-[60px] md:top-20 z-20">
                     <div className="col-span-2 sm:col-span-1">Image</div>
-                    <div className="col-span-4 sm:col-span-5 text-left pl-2">Products</div>
+                    <div className="col-span-3 sm:col-span-5 text-left pl-2">Products</div>
                     <div className="col-span-2 sm:col-span-2">Price</div>
-                    <div className="col-span-2 sm:col-span-2">Qty</div>
+                    <div className="col-span-3 sm:col-span-2">Qty</div>
                     <div className="col-span-2 sm:col-span-2">Amount</div>
                   </div>
                 )}
