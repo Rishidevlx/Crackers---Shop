@@ -3,28 +3,43 @@ import { FiSearch, FiShoppingCart, FiMenu, FiHeart } from 'react-icons/fi';
 import { FaBolt, FaStar } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
-import { useCart } from '../../context/CartContext';
+
 import logo from '../../assets/logo-removebg-preview.png';
-import CartSidebar from '../cart/CartSidebar';
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   
   const location = useLocation();
   const { wishlistCount } = useWishlist();
-  const { cartCount, cartTotal, isCartOpen, setIsCartOpen } = useCart();
-  
-  // Dynamic Marquee
-  const [marqueeText, setMarqueeText] = useState('🎉 HUGE DIWALI SALE IS LIVE! GET FLAT 50% DISCOUNT ON ALL CRACKERS 🔥');
 
+  
+  const [marqueeText, setMarqueeText] = useState('🎉 HUGE DIWALI SALE IS LIVE! GET FLAT 50% DISCOUNT ON ALL CRACKERS 🔥');
+  const [logoUrl, setLogoUrl] = useState(logo);
+  const [siteName, setSiteName] = useState('AK Crackers');
 
   useEffect(() => {
     const fetchCMS = async () => {
       try {
         const response = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
         const data = await response.json();
-        if (data.success && data.data.marquee_text) {
-          setMarqueeText(data.data.marquee_text);
+        if (data.success) {
+          if (data.data.marquee_text) {
+            setMarqueeText(data.data.marquee_text);
+          }
+          if (data.data.general_settings) {
+            if (data.data.general_settings.logo_url) setLogoUrl(data.data.general_settings.logo_url);
+            if (data.data.general_settings.site_name) setSiteName(data.data.general_settings.site_name);
+            if (data.data.general_settings.favicon_url) {
+              let link = document.querySelector("link[rel~='icon']");
+              if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(link);
+              }
+              link.href = data.data.general_settings.favicon_url;
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to fetch marquee:', err);
@@ -76,10 +91,10 @@ const Navbar = () => {
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center justify-center lg:justify-start w-full lg:w-auto absolute lg:static left-0 pointer-events-none lg:pointer-events-auto">
                 <Link to="/home" className="flex items-center gap-2 pointer-events-auto">
-                  <img src={logo} alt="AK Crackers" className="h-12 md:h-16 w-auto drop-shadow-sm hover:scale-105 transition-transform duration-300" />
+                  <img src={logoUrl} alt={siteName} className="h-12 md:h-16 w-auto drop-shadow-sm hover:scale-105 transition-transform duration-300" />
                   <div className="hidden sm:block">
                     <h1 className="text-xl md:text-2xl font-heading font-extrabold text-brand tracking-wider uppercase leading-tight">
-                      AK Crackers
+                      {siteName}
                     </h1>
                     <p className="text-[10px] md:text-xs text-gray-500 font-semibold tracking-widest uppercase">
                       Premium Quality
@@ -123,25 +138,6 @@ const Navbar = () => {
                   )}
                 </Link>
 
-                <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
-                
-                <button 
-                  onClick={() => setIsCartOpen(true)}
-                  className="flex items-center gap-2 bg-brand/10 hover:bg-brand/20 px-3 py-2 rounded-lg transition-colors group cursor-pointer border-none outline-none"
-                >
-                  <div className="relative">
-                    <FiShoppingCart className="h-5 w-5 md:h-6 md:w-6 text-brand transition-transform duration-300 group-hover:scale-110" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1.5 -right-2 bg-brand text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                        {cartCount}
-                      </span>
-                    )}
-                  </div>
-                  <div className="hidden md:flex flex-col text-left">
-                    <span className="text-[10px] text-gray-500 font-semibold leading-none">Your Cart</span>
-                    <span className="text-sm font-bold text-gray-800 leading-none mt-0.5">₹{cartTotal.toFixed(2)}</span>
-                  </div>
-                </button>
               </div>
             </div>
           </div>
@@ -170,8 +166,6 @@ const Navbar = () => {
         </nav>
       </div>
 
-      {/* Cart Sidebar Component */}
-      <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 };

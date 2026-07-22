@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem('cartItems');
@@ -19,34 +18,21 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product, quantity = 1) => {
+  const setProductQuantity = (product, quantity) => {
+    if (quantity === '' || quantity <= 0 || isNaN(quantity)) {
+      setCartItems(prev => prev.filter(item => item.id !== product.id));
+      return;
+    }
+
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
         return prev.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === product.id ? { ...item, quantity: parseInt(quantity) } : item
         );
       }
-      return [...prev, { ...product, quantity }];
+      return [...prev, { ...product, quantity: parseInt(quantity) }];
     });
-    toast.success('Added to Cart!');
-  };
-
-  const removeFromCart = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-    toast.success('Removed from Cart');
-  };
-
-  const updateQuantity = (id, quantity) => {
-    setCartItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const minMoq = item.moq || 1;
-        // If quantity is less than MOQ, snap back to MOQ.
-        const newQuantity = quantity < minMoq ? minMoq : quantity;
-        return { ...item, quantity: newQuantity };
-      }
-      return item;
-    }));
   };
 
   const clearCart = () => {
@@ -56,8 +42,35 @@ export const CartProvider = ({ children }) => {
   const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
+  const generateWhatsAppUrl = (waNumber, itemsToOrder, totalAmount) => {
+    let message = "Hi, I would like to order/inquire about the following items:\n\n";
+    itemsToOrder.forEach((item, index) => {
+      message += `${index + 1}. *${item.name}*\n`;
+      if (item.category) {
+        message += `   Category: ${item.category}\n`;
+      }
+      message += `   Price: ₹${item.price.toFixed(2)}\n`;
+      message += `   Qty: ${item.quantity} ${item.unit ? item.unit : ''}\n`;
+      if (item.image) {
+        message += `   Link/Image: ${item.image}\n`;
+      }
+      message += '\n';
+    });
+    message += `*Total Estimated Amount: ₹${totalAmount.toFixed(2)}*`;
+
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/${waNumber}?text=${encodedMessage}`;
+  };
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, isCartOpen, setIsCartOpen }}>
+    <CartContext.Provider value={{ 
+      cartItems, 
+      setProductQuantity, 
+      clearCart, 
+      cartTotal, 
+      cartCount,
+      generateWhatsAppUrl
+    }}>
       {children}
     </CartContext.Provider>
   );

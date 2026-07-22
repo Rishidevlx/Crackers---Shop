@@ -5,6 +5,7 @@ import FloatingWhatsApp from './components/layout/FloatingWhatsApp.jsx';
 import FloatingCall from './components/layout/FloatingCall.jsx';
 import FloatingGift from './components/layout/FloatingGift.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
+import FloatingOrderBar from './components/shop/FloatingOrderBar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -28,6 +29,7 @@ function App() {
         <FloatingWhatsApp />
         <FloatingCall />
         <FloatingGift />
+        <FloatingOrderBar />
         <Routes>
           <Route path="/" element={<Navigate to="/shop" />} />
           <Route path="/home" element={<Home />} />

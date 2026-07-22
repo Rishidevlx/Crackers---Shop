@@ -43,7 +43,7 @@ const FloatingGift = () => {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-[170px] right-6 bg-[#F8B400] text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-300 z-50 flex items-center justify-center group"
+        className="fixed bottom-[240px] sm:bottom-[170px] right-0 bg-[#F8B400] text-white p-3 pl-4 rounded-l-xl shadow-2xl hover:bg-[#F8B400]/90 transition-all duration-300 z-50 flex items-center justify-center group"
       >
         <FaGift className="text-2xl animate-bounce" />
         

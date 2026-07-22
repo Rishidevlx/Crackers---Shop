@@ -147,7 +147,7 @@ const Shop = () => {
                     </div>
                     
                     {/* Products Container */}
-                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" : "flex flex-col border border-gray-200 bg-white"}>
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" : "flex flex-col border border-gray-200 bg-white"}>
                       {prods.map(product => (
                         <ProductCard key={product.id} product={product} viewMode={viewMode} />
                       ))}

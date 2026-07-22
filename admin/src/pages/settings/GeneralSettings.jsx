@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { FiSettings, FiSave, FiImage, FiType, FiDollarSign } from 'react-icons/fi';
+import { FiSettings, FiSave, FiImage, FiType, FiDollarSign, FiUploadCloud, FiLink, FiX } from 'react-icons/fi';
 
 const GeneralSettings = () => {
   const [settings, setSettings] = useState({
@@ -11,6 +11,11 @@ const GeneralSettings = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [faviconUploading, setFaviconUploading] = useState(false);
+
+  const logoInputRef = useRef(null);
+  const faviconInputRef = useRef(null);
 
   useEffect(() => {
     fetchData();
@@ -33,6 +38,37 @@ const GeneralSettings = () => {
       toast.error('Failed to load settings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (file, field, setUploading) => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploading(true);
+    const toastId = toast.loading('Uploading image to cloud...');
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSettings(prev => ({ ...prev, [field]: data.url }));
+        toast.success('Image uploaded successfully!', { id: toastId });
+      } else {
+        toast.error(data.message || 'Upload failed', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Upload failed. Please try again.', { id: toastId });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -67,6 +103,65 @@ const GeneralSettings = () => {
     return <div className="p-10 text-center text-gray-500 font-medium">Loading Settings...</div>;
   }
 
+  const ImageUploadField = ({ label, field, value, uploading, setUploading, inputRef, previewClass = 'h-24' }) => (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <FiImage className="text-gray-400" /> {label}
+      </label>
+
+      {/* Upload Button */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={inputRef}
+        className="hidden"
+        onChange={(e) => handleImageUpload(e.target.files[0], field, setUploading)}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-brand hover:text-brand hover:bg-brand/5 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mb-3"
+      >
+        {uploading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
+            Uploading...
+          </>
+        ) : (
+          <>
+            <FiUploadCloud className="text-xl" />
+            {value ? 'Replace Image' : 'Upload Image'}
+          </>
+        )}
+      </button>
+
+      {/* URL Text Input (manual fallback) */}
+      <div className="flex items-center gap-2">
+        <FiLink className="text-gray-400 shrink-0" />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setSettings(prev => ({ ...prev, [field]: e.target.value }))}
+          placeholder={`or paste URL directly...`}
+          className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-gray-600"
+        />
+        {value && (
+          <button type="button" onClick={() => setSettings(prev => ({ ...prev, [field]: '' }))} className="text-gray-400 hover:text-red-500 transition-colors">
+            <FiX />
+          </button>
+        )}
+      </div>
+
+      {/* Preview */}
+      {value && (
+        <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
+          <img src={value} alt={`${label} Preview`} className={`${previewClass} object-contain drop-shadow-md`} />
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="p-6 max-w-4xl mx-auto font-body">
       <div className="mb-8 animate-fade-in-up">
@@ -97,41 +192,25 @@ const GeneralSettings = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <FiImage className="text-gray-400" /> Logo URL
-                </label>
-                <input 
-                  type="text" 
-                  value={settings.logo_url}
-                  onChange={(e) => setSettings({...settings, logo_url: e.target.value})}
-                  placeholder="https://example.com/logo.png"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all"
-                />
-                {settings.logo_url && (
-                  <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center h-32">
-                    <img src={settings.logo_url} alt="Logo Preview" className="max-h-full max-w-full object-contain drop-shadow-md" />
-                  </div>
-                )}
-              </div>
+              <ImageUploadField
+                label="Logo"
+                field="logo_url"
+                value={settings.logo_url}
+                uploading={logoUploading}
+                setUploading={setLogoUploading}
+                inputRef={logoInputRef}
+                previewClass="max-h-24 max-w-full"
+              />
               
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <FiImage className="text-gray-400" /> Favicon URL
-                </label>
-                <input 
-                  type="text" 
-                  value={settings.favicon_url}
-                  onChange={(e) => setSettings({...settings, favicon_url: e.target.value})}
-                  placeholder="https://example.com/favicon.png"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all"
-                />
-                {settings.favicon_url && (
-                  <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center h-32">
-                    <img src={settings.favicon_url} alt="Favicon Preview" className="h-12 w-12 object-contain drop-shadow-sm" />
-                  </div>
-                )}
-              </div>
+              <ImageUploadField
+                label="Favicon"
+                field="favicon_url"
+                value={settings.favicon_url}
+                uploading={faviconUploading}
+                setUploading={setFaviconUploading}
+                inputRef={faviconInputRef}
+                previewClass="h-12 w-12"
+              />
             </div>
           </div>
         </div>

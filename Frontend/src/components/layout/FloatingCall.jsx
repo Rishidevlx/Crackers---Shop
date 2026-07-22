@@ -22,7 +22,7 @@ const FloatingCall = () => {
   return (
     <a
       href={`tel:${callNumber}`}
-      className="fixed bottom-[105px] right-6 bg-brand text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-300 z-50 flex items-center justify-center group"
+      className="fixed bottom-[175px] sm:bottom-[105px] right-0 bg-brand text-white p-3 pl-4 rounded-l-xl shadow-2xl hover:bg-brand/90 transition-all duration-300 z-50 flex items-center justify-center group"
     >
       <FaPhoneAlt className="text-2xl" />
       

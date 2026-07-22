@@ -1,27 +1,60 @@
-import React, { useState } from 'react';
-import { FiShoppingCart, FiHeart } from 'react-icons/fi';
-import { FaHeart } from 'react-icons/fa';
+import React from 'react';
+import { FiHeart } from 'react-icons/fi';
+import { FaHeart, FaWhatsapp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import toast from 'react-hot-toast';
 
 const ProductCard = ({ product, viewMode = 'grid' }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product.id);
-  const { addToCart } = useCart();
-  const [qty, setQty] = useState('');
+  const { cartItems, setProductQuantity, generateWhatsAppUrl } = useCart();
+  
+  const cartItem = cartItems.find(item => item.id === product.id);
+  const qty = cartItem ? cartItem.quantity : '';
 
   const handleQtyChange = (e) => {
-    const val = parseInt(e.target.value);
-    if (!isNaN(val) && val > 0) {
-      setQty(val);
-    } else if (e.target.value === '') {
-      setQty('');
+    const val = e.target.value;
+    if (val === '') {
+      setProductQuantity(product, '');
+      return;
+    }
+    const num = parseInt(val);
+    if (!isNaN(num) && num >= 0) {
+      setProductQuantity(product, num);
     }
   };
 
-  const increment = () => setQty((prev) => (prev === '' ? 1 : prev + 1));
-  const decrement = () => setQty((prev) => (prev > 1 ? prev - 1 : 1));
+  const increment = () => setProductQuantity(product, qty === '' ? 1 : qty + 1);
+  const decrement = () => {
+    if (qty > 1) setProductQuantity(product, qty - 1);
+    else setProductQuantity(product, '');
+  };
+
+  const handleSingleOrder = async () => {
+    const orderQty = qty || 1;
+    if (!qty) setProductQuantity(product, 1);
+    
+    const toastId = toast.loading('Connecting to WhatsApp...');
+    try {
+      const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
+      const data = await res.json();
+      const currentWaSettings = data.data?.whatsapp_settings;
+      
+      if (!currentWaSettings?.number) {
+        toast.error('WhatsApp number not configured.', { id: toastId });
+        return;
+      }
+      
+      const itemToOrder = { ...product, quantity: orderQty };
+      const url = generateWhatsAppUrl(currentWaSettings.number, [itemToOrder], itemToOrder.price * orderQty);
+      toast.dismiss(toastId);
+      window.open(url, '_blank');
+    } catch (error) {
+      toast.error('Failed to connect.', { id: toastId });
+    }
+  };
 
   if (viewMode === 'list') {
     return (
@@ -50,19 +83,19 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
           <div className="font-bold text-green-600">₹{product.price}</div>
         </div>
         <div className="col-span-3 sm:col-span-2 flex justify-center">
-          <div className="flex items-center border border-gray-300 rounded bg-white overflow-hidden h-8 w-20 sm:w-24 shrink-0">
-             <button onClick={decrement} className="px-2 text-gray-600 hover:bg-gray-100 h-full font-bold">-</button>
-             <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-xs outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal" />
-             <button onClick={increment} className="px-2 text-gray-600 hover:bg-gray-100 h-full font-bold">+</button>
+          <div className="flex items-center border border-gray-300 rounded bg-white overflow-hidden h-9 w-24 shrink-0">
+             <button onClick={decrement} className="px-2.5 text-gray-600 hover:bg-gray-100 h-full font-bold">-</button>
+             <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-sm outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal font-semibold text-gray-800" />
+             <button onClick={increment} className="px-2.5 text-gray-600 hover:bg-gray-100 h-full font-bold">+</button>
           </div>
         </div>
         <div className="col-span-2 sm:col-span-2 flex items-center justify-between font-bold text-gray-700">
           <span className="hidden sm:inline-block">₹{((qty || 0) * product.price).toFixed(0)}</span>
           <button 
-            onClick={() => addToCart(product, qty || 1)}
-            className="bg-brand hover:bg-brand/90 text-white px-2 sm:px-4 py-1.5 rounded ml-auto shadow-sm transition-colors flex items-center justify-center"
+            onClick={handleSingleOrder}
+            className="bg-brand hover:bg-brand/90 text-white px-3 sm:px-5 py-2 rounded ml-auto shadow-sm transition-colors flex items-center justify-center text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap"
           >
-            <FiShoppingCart className="h-4 w-4" />
+            ORDER NOW
           </button>
         </div>
       </div>
@@ -70,59 +103,59 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
   }
 
   return (
-    <div className="flex bg-primary border border-gray-200 rounded-lg overflow-hidden relative shadow-sm hover:shadow-md transition-shadow h-36 sm:h-40">
+    <div className="flex bg-primary border border-gray-200 rounded-xl overflow-hidden relative shadow-sm hover:shadow-md transition-shadow h-44 sm:h-48 group">
       
       {/* Discount Badge */}
       {product.discount && (
-        <div className="absolute top-0 left-0 bg-brand text-white text-[10px] font-bold px-1.5 py-0.5 rounded-br-lg z-10">
+        <div className="absolute top-2 left-2 bg-brand text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow">
           {product.discount}%
         </div>
       )}
 
-      {/* Image Side */}
+      {/* Image Left */}
       <Link 
         to={`/product/${product.id}`} 
-        className="w-[40%] relative flex items-center justify-center p-3 bg-gradient-to-br from-green-700 to-green-800"
+        className="w-[38%] sm:w-[40%] shrink-0 flex items-center justify-center p-3 bg-gradient-to-br from-green-700 to-green-800 overflow-hidden"
       >
         <img 
           src={product.image || 'https://via.placeholder.com/200'} 
           alt={product.name} 
-          className="w-full h-full max-h-40 object-contain rounded drop-shadow-md group-hover:scale-105 transition-transform"
+          className="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
         />
       </Link>
 
-      {/* Details Side */}
-      <div className="w-[60%] p-3 sm:p-4 flex flex-col justify-between">
+      {/* Details Right */}
+      <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-between overflow-hidden">
         <Link to={`/product/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 hover:text-brand transition-colors">
             {product.name}
           </h3>
         </Link>
         
         {/* Pricing */}
-        <div className="mt-2 text-center text-sm">
+        <div className="flex flex-col items-center text-sm">
           {product.originalPrice && (
-            <div className="text-red-500 line-through text-xs font-semibold">
+            <span className="text-red-400 line-through text-xs font-medium">
               ₹{product.originalPrice} / 1Pkt
-            </div>
+            </span>
           )}
-          <div className="font-extrabold text-gray-900">
+          <span className="font-extrabold text-gray-900">
             ₹{product.price} / 1Pkt
-          </div>
+          </span>
         </div>
 
         {/* Action Row */}
-        <div className="flex items-center justify-between mt-3 gap-2">
-          <div className="flex items-center border border-gray-300 rounded overflow-hidden bg-white h-8 w-24 sm:w-28 shrink-0">
-             <button onClick={decrement} className="px-2 text-brand font-bold hover:bg-gray-100 h-full">-</button>
-             <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-xs outline-none h-full border-x border-gray-300 placeholder:text-gray-400 placeholder:font-normal font-semibold text-gray-700" />
-             <button onClick={increment} className="px-2 text-brand font-bold hover:bg-gray-100 h-full">+</button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white h-9 w-24 sm:w-28 shrink-0">
+             <button onClick={decrement} className="px-2 text-brand font-bold hover:bg-gray-100 h-full flex items-center justify-center">−</button>
+             <input type="text" placeholder="Qty" value={qty} onChange={handleQtyChange} className="w-full text-center text-sm outline-none h-full border-x border-gray-300 placeholder:text-gray-400 font-semibold text-gray-800" />
+             <button onClick={increment} className="px-2 text-brand font-bold hover:bg-gray-100 h-full flex items-center justify-center">+</button>
           </div>
           <button 
-            onClick={() => addToCart(product, qty || 1)}
-            className="bg-brand text-white px-3 sm:px-4 py-1.5 rounded-md shadow hover:bg-brand/90 transition-colors flex items-center justify-center"
+            onClick={handleSingleOrder}
+            className="flex-1 bg-brand text-white py-2 rounded-lg shadow hover:bg-brand/90 transition-colors text-[11px] sm:text-xs font-bold uppercase tracking-wide whitespace-nowrap h-9 flex items-center justify-center"
           >
-            <FiShoppingCart className="h-4 w-4" />
+            Order Now
           </button>
         </div>
       </div>

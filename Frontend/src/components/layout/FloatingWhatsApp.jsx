@@ -32,7 +32,7 @@ const FloatingWhatsApp = () => {
       href={waLink}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-300 z-50 flex items-center justify-center group"
+      className="fixed bottom-[110px] sm:bottom-6 right-0 bg-[#25D366] text-white p-3 pl-4 rounded-l-xl shadow-2xl hover:bg-[#25D366]/90 transition-all duration-300 z-50 flex items-center justify-center group"
     >
       <FaWhatsapp className="text-3xl" />
       
