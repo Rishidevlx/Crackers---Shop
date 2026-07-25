@@ -4,14 +4,17 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { FiMessageCircle, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
+import { useLocation } from 'react-router-dom';
+
 const FloatingOrderBar = () => {
+  const location = useLocation();
   const { cartItems, cartTotal, cartCount, generateWhatsAppUrl } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [waSettings, setWaSettings] = useState(null);
 
-
+  if (location.pathname !== '/shop') return null;
 
   const handleOrderClick = async () => {
     if (cartCount === 0) {

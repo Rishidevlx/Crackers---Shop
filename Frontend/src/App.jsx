@@ -4,6 +4,7 @@ import Navbar from './components/layout/Navbar.jsx';
 import FloatingWhatsApp from './components/layout/FloatingWhatsApp.jsx';
 import FloatingCall from './components/layout/FloatingCall.jsx';
 import FloatingGift from './components/layout/FloatingGift.jsx';
+import FloatingLocation from './components/layout/FloatingLocation.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
 import FloatingOrderBar from './components/shop/FloatingOrderBar.jsx';
 import Footer from './components/layout/Footer.jsx';
@@ -29,6 +30,7 @@ function App() {
         <FloatingWhatsApp />
         <FloatingCall />
         <FloatingGift />
+        <FloatingLocation />
         <FloatingOrderBar />
         <Routes>
           <Route path="/" element={<Navigate to="/shop" />} />
