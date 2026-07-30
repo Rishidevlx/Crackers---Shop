@@ -19,6 +19,8 @@ import { Toaster } from 'react-hot-toast';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Offers from './pages/Offers';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
         </Routes>
         <Footer />
       </div>

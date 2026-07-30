@@ -1,10 +1,17 @@
 import React from 'react';
 import { FaPhoneAlt, FaBoxOpen, FaPercent, FaHandshake, FaQuoteLeft, FaStar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import SEO from '../components/seo/SEO';
 
 const About = () => {
   return (
     <div className="font-body text-black bg-primary min-h-screen">
+      <SEO 
+        title="About AK Crackers - No.1 Crackers Shop in Sivakasi"
+        description="Learn more about AK Crackers, the most trusted fireworks shop in Sivakasi. We provide safe, high-quality, and affordable crackers online."
+        keywords="About AK Crackers Sivakasi, top fireworks shop in Sivakasi, Sivakasi crackers factory, Sivakasi crackers online"
+        canonicalUrl="https://akcrackers.genzneuralx.com/about"
+      />
       
       {/* 1. Banner Section */}
       <section 

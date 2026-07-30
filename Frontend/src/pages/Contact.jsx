@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaClock } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import SEO from '../components/seo/SEO';
 
 const Contact = () => {
   const [contactDetails, setContactDetails] = useState({
-    address: '138, Srivilliputhur Street, Sivakasi, Tamil Nadu',
+    address: '138, Sivakasi Main Road, Sivakasi, Tamil Nadu',
     phone: '+91 93639 53616',
     email: 'hari953616@gmail.com',
     working_hours: 'Monday to Sunday: 9:00 AM - 9:00 PM',
@@ -24,6 +25,12 @@ const Contact = () => {
 
   return (
     <div className="font-body text-black min-h-screen bg-primary">
+      <SEO 
+        title="Contact AK Crackers Sivakasi - Customer Support"
+        description="Contact AK Crackers in Sivakasi for wholesale enquiries, bulk orders, and Diwali cracker combos. Call us at +91 93639 53616."
+        keywords="Contact AK Crackers, Sivakasi crackers phone number, Sivakasi crackers address, buy crackers online contact"
+        canonicalUrl="https://akcrackers.genzneuralx.com/contact"
+      />
       
       {/* 1. Banner Section */}
       <section 

@@ -4,7 +4,7 @@ import { FaWhatsapp, FaPhoneAlt, FaEnvelope, FaFacebook } from 'react-icons/fa';
 
 const Footer = () => {
   const [contactDetails, setContactDetails] = useState({
-    address: '138, Srivilliputhur Street',
+    address: '138, Sivakasi Main Road, Sivakasi, Tamil Nadu',
     phone: '93639 53616',
     email: 'hari953616@gmail.com'
   });

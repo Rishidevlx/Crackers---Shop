@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SEO from '../components/seo/SEO';
 import ShopBanner from '../components/shop/ShopBanner';
 import ShopSidebar from '../components/shop/ShopSidebar';
 import ShopTopBar from '../components/shop/ShopTopBar';
@@ -94,6 +95,12 @@ const Shop = () => {
 
   return (
     <main className="shop-page bg-gray-50 min-h-screen pb-16">
+      <SEO 
+        title="Shop Crackers Online - Sivakasi Crackers Price List | AK Crackers"
+        description="Browse our wide range of Diwali crackers. Download Sivakasi crackers price list, buy combo packs, sparklers, and night skyshots online safely."
+        keywords="Sivakasi crackers price list, online crackers shopping Sivakasi, Diwali combo packs online, standard crackers price"
+        canonicalUrl="https://akcrackers.genzneuralx.com/shop"
+      />
       <ShopBanner />
       
       <div className="max-w-7xl mx-auto px-5 md:px-12 pt-12 flex flex-col relative">
