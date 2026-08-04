@@ -78,13 +78,17 @@ const Shop = () => {
   });
 
   let sortedProducts = [...filteredProducts];
+  // Logic changed: Show newly added products first by default
+  sortedProducts.sort((a, b) => b.id - a.id);
+
   if (sortOption === 'price-low') {
     sortedProducts.sort((a, b) => a.price - b.price);
   } else if (sortOption === 'price-high') {
     sortedProducts.sort((a, b) => b.price - a.price);
-  } else if (sortOption === 'latest') {
+  } 
+  /* else if (sortOption === 'latest') {
     sortedProducts.sort((a, b) => b.id - a.id);
-  }
+  } */
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
@@ -127,7 +131,8 @@ const Shop = () => {
 
           {/* Product Grid / List */}
           <div className="w-full">
-            {sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 ? (
+            {/* {sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 ? ( */}
+            {sortedProducts.length > 0 ? (
               <div className="flex flex-col gap-8">
                 {viewMode === 'list' && (
                   <div className="grid grid-cols-12 gap-2 bg-[#FFC107] text-gray-900 font-bold text-[10px] sm:text-sm py-3 px-2 mb-[-1.5rem] text-center uppercase border-b-[3px] border-brand sticky top-[60px] md:top-20 z-20">
@@ -140,7 +145,8 @@ const Shop = () => {
                 )}
                 
                 {Object.entries(
-                  sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).reduce((acc, product) => {
+                  /* sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).reduce((acc, product) => { */
+                  sortedProducts.reduce((acc, product) => {
                     const cat = product.category || 'Uncategorized';
                     if (!acc[cat]) acc[cat] = [];
                     acc[cat].push(product);
@@ -169,13 +175,13 @@ const Shop = () => {
             )}
           </div>
 
-          {sortedProducts.length > 0 && (
+          {/* {sortedProducts.length > 0 && (
             <Pagination 
               currentPage={currentPage} 
               totalPages={totalPages} 
               onPageChange={setCurrentPage} 
             />
-          )}
+          )} */}
         </div>
       </div>
     </main>
