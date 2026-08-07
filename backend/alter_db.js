@@ -12,7 +12,7 @@ async function run() {
   });
   
   try {
-    await pool.query("ALTER TABLE products ADD COLUMN offer_price DECIMAL(10, 2) NULL, ADD COLUMN offer_moq INT DEFAULT 1;");
+    await pool.query("ALTER TABLE whatsapp_enquiries ADD COLUMN invoice_url TEXT NULL;");
     console.log('ALTER done');
   } catch (e) {
     if (e.message.includes('Duplicate column name')) {

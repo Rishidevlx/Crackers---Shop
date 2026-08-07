@@ -12,25 +12,35 @@ const Shop = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState('default');
   const [viewMode, setViewMode] = useState('grid');
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(import.meta.env.VITE_API_URL + '/api/categories');
+        const data = await response.json();
+        if (data.success) {
+          setCategories(data.data.filter(c => c.status === 'active'));
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+
     const fetchProducts = async () => {
       try {
         const response = await fetch(import.meta.env.VITE_API_URL + '/api/products');
         const data = await response.json();
         if (data.success) {
-          // Map database structure to frontend expectations
           const formattedProducts = data.data.map(p => {
-            let discount = null;
+            let discount = p.discount_percentage ? parseFloat(p.discount_percentage) : null;
             const orig = p.original_price ? parseFloat(p.original_price) : null;
             const curr = parseFloat(p.price);
-            if (orig && orig > curr) {
-              discount = Math.round(((orig - curr) / orig) * 100);
-            }
             
             // Description might be a JSON string array, parse to get a single string snippet
             let descSnippet = '';
@@ -144,29 +154,58 @@ const Shop = () => {
                   </div>
                 )}
                 
-                {Object.entries(
-                  /* sortedProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).reduce((acc, product) => { */
-                  sortedProducts.reduce((acc, product) => {
-                    const cat = product.category || 'Uncategorized';
-                    if (!acc[cat]) acc[cat] = [];
-                    acc[cat].push(product);
-                    return acc;
-                  }, {})
-                ).map(([category, prods]) => (
-                  <div key={category} className="flex flex-col">
-                    {/* Category Header */}
-                    <div className="w-full text-center text-white font-bold py-2 px-4 uppercase tracking-wider mb-4 shadow-sm text-sm bg-brand">
-                      {category}
-                    </div>
+                {(() => {
+                  const renderedCategories = [];
+                  const catNames = categories.map(c => c.name);
+                  
+                  // First map through fetched sorted categories
+                  categories.forEach(cat => {
+                    const prods = sortedProducts.filter(p => p.category === cat.name);
+                    if (prods.length > 0) {
+                      renderedCategories.push(
+                        <div key={cat.name} className="flex flex-col">
+                          <div className="w-full text-center text-white font-bold py-2 px-4 uppercase tracking-wider mb-4 shadow-sm text-sm bg-brand">
+                            {cat.name}
+                          </div>
+                          <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" : "flex flex-col border border-gray-200 bg-white"}>
+                            {prods.map(product => (
+                              <ProductCard key={product.id} product={product} viewMode={viewMode} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                  });
+
+                  // Then append any uncategorized or missing categories
+                  const uncategorizedProds = sortedProducts.filter(p => !catNames.includes(p.category));
+                  if (uncategorizedProds.length > 0) {
+                    // Group remaining by their existing category name or 'Uncategorized'
+                    const remainingGroups = uncategorizedProds.reduce((acc, product) => {
+                      const cat = product.category || 'Uncategorized';
+                      if (!acc[cat]) acc[cat] = [];
+                      acc[cat].push(product);
+                      return acc;
+                    }, {});
                     
-                    {/* Products Container */}
-                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" : "flex flex-col border border-gray-200 bg-white"}>
-                      {prods.map(product => (
-                        <ProductCard key={product.id} product={product} viewMode={viewMode} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    Object.entries(remainingGroups).forEach(([catName, prods]) => {
+                      renderedCategories.push(
+                        <div key={catName} className="flex flex-col">
+                          <div className="w-full text-center text-white font-bold py-2 px-4 uppercase tracking-wider mb-4 shadow-sm text-sm bg-gray-700">
+                            {catName}
+                          </div>
+                          <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" : "flex flex-col border border-gray-200 bg-white"}>
+                            {prods.map(product => (
+                              <ProductCard key={product.id} product={product} viewMode={viewMode} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    });
+                  }
+                  
+                  return renderedCategories;
+                })()}
               </div>
             ) : (
               <div className="col-span-full py-10 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">

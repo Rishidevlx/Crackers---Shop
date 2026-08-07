@@ -6,6 +6,7 @@ import AdminLayout from './components/layout/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import HomeCMS from './pages/cms/HomeCMS';
 import TopSelling from './pages/cms/TopSelling';
+import TaskbarCMS from './pages/cms/TaskbarCMS';
 import Categories from './pages/categories/Categories';
 import AddProduct from './pages/products/AddProduct';
 import AllProducts from './pages/products/AllProducts';
@@ -33,6 +34,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="cms/home" element={<HomeCMS />} />
           <Route path="cms/top-selling" element={<TopSelling />} />
+          <Route path="cms/taskbar" element={<TaskbarCMS />} />
           <Route path="cms/footer" element={<FooterCMS />} />
           <Route path="categories" element={<Categories />} />
           <Route path="products" element={<AllProducts />} />

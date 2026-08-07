@@ -26,12 +26,9 @@ const ProductDetails = () => {
         const data = await response.json();
         if (data.success) {
           const p = data.data;
-          let discount = null;
+          let discount = p.discount_percentage ? parseFloat(p.discount_percentage) : null;
           const orig = p.is_offer_active ? parseFloat(p.original_price) : null;
           const curr = parseFloat(p.price);
-          if (orig && orig > curr) {
-            discount = Math.round(((orig - curr) / orig) * 100);
-          }
           
           let parsedDesc = [];
           if (Array.isArray(p.description)) {

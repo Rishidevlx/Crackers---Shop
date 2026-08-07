@@ -82,6 +82,7 @@ const Sidebar = ({ onClose }) => {
       subItems: [
         { title: 'Home Page', to: '/dashboard/cms/home', onClick: onClose },
         { title: 'Latest Top Selling Product', to: '/dashboard/cms/top-selling', onClick: onClose },
+        { title: 'Taskbar', to: '/dashboard/cms/taskbar', onClick: onClose },
         { title: 'Footer', to: '/dashboard/cms/footer', onClick: onClose }
       ]
     },

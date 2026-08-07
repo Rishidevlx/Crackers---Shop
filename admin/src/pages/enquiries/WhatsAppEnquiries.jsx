@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { FiMessageCircle, FiCalendar, FiSearch, FiShoppingBag, FiTrash2, FiCheckSquare } from 'react-icons/fi';
+import { FiMessageCircle, FiCalendar, FiSearch, FiShoppingBag, FiTrash2, FiCheckSquare, FiDownload } from 'react-icons/fi';
 
 const WhatsAppEnquiries = () => {
   const [enquiries, setEnquiries] = useState([]);
@@ -376,7 +376,7 @@ const WhatsAppEnquiries = () => {
                 </th>
                 <th className="py-4 px-6 font-semibold">ID</th>
                 <th className="py-4 px-6 font-semibold">Date & Time</th>
-                <th className="py-4 px-6 font-semibold">Mobile Number</th>
+                <th className="py-4 px-6 font-semibold">Details</th>
                 <th className="py-4 px-6 font-semibold">Cart Items</th>
                 <th className="py-4 px-6 font-semibold">Status</th>
                 <th className="py-4 px-6 font-semibold text-center">Action</th>
@@ -406,8 +406,19 @@ const WhatsAppEnquiries = () => {
                         {formatDate(enq.created_at)}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">
-                      +91 {enq.mobile_number}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <div className="flex items-center">
+                          <FiMessageCircle className="text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900">+91 {enq.mobile_number}</span>
+                        </div>
+                        {enq.customer_name && (
+                          <span className="text-xs text-gray-600 mt-1 font-semibold">{enq.customer_name}</span>
+                        )}
+                        {enq.customer_address && (
+                          <span className="text-xs text-gray-500 mt-0.5 truncate max-w-[150px]" title={enq.customer_address}>{enq.customer_address}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
@@ -445,6 +456,17 @@ const WhatsAppEnquiries = () => {
                         >
                           <FiTrash2 />
                         </button>
+                        {enq.invoice_url && (
+                          <a 
+                            href={enq.invoice_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-brand transition-colors p-1"
+                            title="Download Invoice"
+                          >
+                            <FiDownload />
+                          </a>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -473,9 +495,19 @@ const WhatsAppEnquiries = () => {
             
             <div className="p-6 overflow-y-auto">
               <div className="mb-6 grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Mobile Number</p>
-                  <p className="font-bold text-gray-900 text-lg">+91 {selectedEnquiry.mobile_number}</p>
+                <div className="grid grid-cols-2 gap-4 col-span-2">
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Mobile Number</p>
+                    <p className="text-gray-800 font-bold">+91 {selectedEnquiry.mobile_number}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Customer Name</p>
+                    <p className="text-gray-800 font-bold">{selectedEnquiry.customer_name || 'N/A'}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 col-span-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Address</p>
+                    <p className="text-gray-800 font-medium">{selectedEnquiry.customer_address || 'N/A'}</p>
+                  </div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                   <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Date</p>

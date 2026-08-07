@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { FaWhatsapp } from 'react-icons/fa';
 import { FiMessageCircle, FiX } from 'react-icons/fi';
@@ -11,8 +11,33 @@ const FloatingOrderBar = () => {
   const { cartItems, cartTotal, cartCount, generateWhatsAppUrl } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [waSettings, setWaSettings] = useState(null);
+  const [taskbarSettings, setTaskbarSettings] = useState(null);
+
+  useEffect(() => {
+    // Initial fetch to get taskbar settings when component mounts
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
+        const data = await res.json();
+        if (data.success && data.data) {
+          if (data.data.taskbar_settings) {
+            setTaskbarSettings(
+              typeof data.data.taskbar_settings === 'string' 
+                ? JSON.parse(data.data.taskbar_settings)
+                : data.data.taskbar_settings
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching settings for taskbar:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   if (location.pathname !== '/shop') return null;
 
@@ -26,6 +51,17 @@ const FloatingOrderBar = () => {
       const res = await fetch(import.meta.env.VITE_API_URL + '/api/cms/home');
       const data = await res.json();
       const currentWaSettings = data.data?.whatsapp_settings;
+      const currentTaskbarSettings = typeof data.data?.taskbar_settings === 'string'
+        ? JSON.parse(data.data.taskbar_settings)
+        : data.data?.taskbar_settings;
+
+      if (currentTaskbarSettings && currentTaskbarSettings.is_active) {
+        const minVal = currentTaskbarSettings.minimum_value || 0;
+        if (cartTotal < minVal) {
+          toast.error(`Minimum order value must be ₹${minVal}.`, { id: toastId });
+          return;
+        }
+      }
       
       if (!currentWaSettings?.number) {
         toast.error('WhatsApp number not configured. Please try again later.', { id: toastId });
@@ -60,6 +96,8 @@ const FloatingOrderBar = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mobile_number: mobileNumber,
+          customer_name: customerName,
+          customer_address: customerAddress,
           cart_data: cartItems
         })
       });
@@ -68,7 +106,13 @@ const FloatingOrderBar = () => {
       if (data.success) {
         setIsModalOpen(false);
         setMobileNumber('');
-        window.open(generateWhatsAppUrl(waSettings.number, cartItems, cartTotal), '_blank');
+        setCustomerName('');
+        setCustomerAddress('');
+        let waUrl = generateWhatsAppUrl(waSettings.number, cartItems, cartTotal);
+        if (data.invoice_url) {
+          waUrl += encodeURIComponent(`\n\n📄 Download your Estimate Invoice here:\n${data.invoice_url}`);
+        }
+        window.open(waUrl, '_blank');
       } else {
         toast.error('Failed to submit enquiry. Please try again.');
       }
@@ -82,8 +126,16 @@ const FloatingOrderBar = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 w-full z-40 p-3 sm:p-6 pointer-events-none">
-        <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border-t-4 border-brand shadow-[0_-10px_40px_rgba(0,0,0,0.15)] rounded-2xl pointer-events-auto flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 gap-4 overflow-hidden relative">
+      <div className="fixed bottom-0 left-0 w-full z-40 p-3 sm:p-6 pointer-events-none flex flex-col items-center gap-2">
+        {/* Taskbar Section */}
+        {taskbarSettings && taskbarSettings.is_active && taskbarSettings.text && (
+          <div className="max-w-4xl w-full mx-auto bg-brand text-white text-center py-2 px-4 rounded-xl shadow-lg pointer-events-auto text-xs sm:text-sm font-bold tracking-wide animate-fade-in-up flex items-center justify-center gap-2">
+            <span className="animate-pulse">🔥</span> {taskbarSettings.text} <span className="animate-pulse">🔥</span>
+          </div>
+        )}
+
+        {/* Main Floating Order Bar */}
+        <div className="max-w-4xl w-full mx-auto bg-white/95 backdrop-blur-md border-t-4 border-brand shadow-[0_-10px_40px_rgba(0,0,0,0.15)] rounded-2xl pointer-events-auto flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 gap-4 overflow-hidden relative">
           
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-brand to-brand opacity-80"></div>
           
@@ -148,6 +200,25 @@ const FloatingOrderBar = () => {
                     }}
                     placeholder="Enter 10-digit number" 
                     className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <div className="flex bg-gray-50 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-shadow">
+                  <input 
+                    type="text" 
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Full Name" 
+                    className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <div className="flex bg-gray-50 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-shadow">
+                  <textarea 
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    placeholder="Delivery Address" 
+                    className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400 resize-none h-24"
                     required
                   />
                 </div>

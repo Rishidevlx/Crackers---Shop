@@ -15,6 +15,7 @@ const AddProduct = () => {
     category_id: '',
     original_price: '',
     price: '',
+    discount_percentage: '',
     moq: 1,
     unit: ['packet'],
     status: 'active'
@@ -42,6 +43,7 @@ const AddProduct = () => {
           category_id: p.category_id || '',
           original_price: p.original_price || '',
           price: p.price || '',
+          discount_percentage: p.discount_percentage || '',
           moq: p.moq || 1,
           unit: p.unit ? (typeof p.unit === 'string' ? JSON.parse(p.unit) : p.unit) : ['packet'],
           status: p.status || 'active'
@@ -168,6 +170,7 @@ const AddProduct = () => {
         ...formData,
         original_price: formData.original_price ? parseFloat(formData.original_price) : null,
         price: parseFloat(formData.price),
+        discount_percentage: formData.discount_percentage ? parseFloat(formData.discount_percentage) : null,
         category_id: parseInt(formData.category_id),
         description: cleanDesc,
         main_image: mainImage,
@@ -256,7 +259,7 @@ const AddProduct = () => {
               </div>
 
               {/* Pricing & Units */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Strike-out Price (₹)</label>
                   <input 
@@ -278,6 +281,17 @@ const AddProduct = () => {
                     className="w-full border border-gray-300 rounded-lg py-2.5 px-4 outline-none focus:border-[#3c50e0]"
                     placeholder="1500"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Discount (%)</label>
+                  <input 
+                    type="number" 
+                    name="discount_percentage"
+                    value={formData.discount_percentage}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg py-2.5 px-4 outline-none focus:border-[#3c50e0]"
+                    placeholder="50"
                   />
                 </div>
               </div>

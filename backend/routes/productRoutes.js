@@ -22,8 +22,8 @@ router.post('/', protect, async (req, res) => {
   try {
     const query = `
       INSERT INTO products (
-        name, description, category_id, original_price, price, unit, main_image, sub_images, status, moq
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        name, description, category_id, original_price, price, unit, main_image, sub_images, status, moq, discount_percentage
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -36,7 +36,8 @@ router.post('/', protect, async (req, res) => {
       main_image || null,
       sub_images ? JSON.stringify(sub_images) : null,
       status || 'active',
-      req.body.moq ? parseInt(req.body.moq) : 1
+      req.body.moq ? parseInt(req.body.moq) : 1,
+      req.body.discount_percentage ? parseFloat(req.body.discount_percentage) : null
     ];
 
     const [result] = await db.query(query, values);
@@ -168,7 +169,7 @@ router.put('/:id', protect, async (req, res) => {
     const query = `
       UPDATE products SET 
         name = ?, description = ?, category_id = ?, original_price = ?, price = ?, 
-        unit = ?, main_image = ?, sub_images = ?, status = ?, moq = ?
+        unit = ?, main_image = ?, sub_images = ?, status = ?, moq = ?, discount_percentage = ?
       WHERE id = ?
     `;
 
@@ -183,6 +184,7 @@ router.put('/:id', protect, async (req, res) => {
       sub_images ? JSON.stringify(sub_images) : null,
       status || 'active',
       req.body.moq ? parseInt(req.body.moq) : 1,
+      req.body.discount_percentage ? parseFloat(req.body.discount_percentage) : null,
       id
     ];
 

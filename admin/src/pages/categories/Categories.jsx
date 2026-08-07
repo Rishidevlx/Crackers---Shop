@@ -272,9 +272,44 @@ const Categories = () => {
       setCategories((items) => {
         const oldIndex = items.findIndex(i => i.id === active.id);
         const newIndex = items.findIndex(i => i.id === over.id);
-        const reordered = arrayMove(items, oldIndex, newIndex);
         
-        return reordered;
+        const activeItem = items[oldIndex];
+        const overItem = items[newIndex];
+
+        if (activeItem.parent_id !== null) {
+          // SUB-CATEGORY
+          if (activeItem.parent_id !== overItem.parent_id) {
+             toast.error("Sub-categories can only be rearranged within their own main category.");
+             return items; 
+          }
+          // Just use arrayMove for sub-categories within the same parent
+          return arrayMove(items, oldIndex, newIndex);
+        } else {
+          // MAIN CATEGORY
+          if (overItem.parent_id !== null) {
+             toast.error("Main categories can only be swapped with other main categories.");
+             return items;
+          }
+          
+          const activeGroup = [activeItem, ...items.filter(i => i.parent_id === activeItem.id)];
+          const remainingItems = items.filter(i => i.id !== activeItem.id && i.parent_id !== activeItem.id);
+          
+          let insertIndex = remainingItems.findIndex(i => i.id === overItem.id);
+          
+          if (oldIndex < newIndex) {
+            // Dragging down -> insert after overItem's group
+            const overChildrenCount = remainingItems.filter(i => i.parent_id === overItem.id).length;
+            insertIndex = insertIndex + overChildrenCount + 1;
+          }
+          
+          const newItems = [
+            ...remainingItems.slice(0, insertIndex),
+            ...activeGroup,
+            ...remainingItems.slice(insertIndex)
+          ];
+          
+          return newItems;
+        }
       });
     }
   };

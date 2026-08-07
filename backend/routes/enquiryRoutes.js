@@ -2,27 +2,58 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const protect = require('../middleware/authMiddleware');
+const { generateInvoicePDF } = require('../utils/pdfGenerator');
 
 // @desc    Create a new WhatsApp enquiry
 // @route   POST /api/enquiries/whatsapp
 // @access  Public
 router.post('/whatsapp', async (req, res) => {
-  const { mobile_number, cart_data } = req.body;
+  const { mobile_number, cart_data, customer_name, customer_address } = req.body;
 
-  if (!mobile_number) {
-    return res.status(400).json({ success: false, message: 'Mobile number is required' });
+  if (!mobile_number || !customer_name || !customer_address) {
+    return res.status(400).json({ success: false, message: 'Required fields are missing' });
   }
 
   try {
     const connection = await pool.getConnection();
     const query = `
-      INSERT INTO whatsapp_enquiries (mobile_number, cart_data) 
-      VALUES (?, ?)
+      INSERT INTO whatsapp_enquiries (mobile_number, cart_data, customer_name, customer_address) 
+      VALUES (?, ?, ?, ?)
     `;
-    await connection.query(query, [mobile_number, JSON.stringify(cart_data || {})]);
+    const [result] = await connection.query(query, [mobile_number, JSON.stringify(cart_data || {}), customer_name, customer_address]);
+    const enquiryId = result.insertId;
+
+    // Fetch Shop CMS Data for PDF
+    const [cmsRows] = await connection.query('SELECT * FROM home_cms LIMIT 1');
+    let shopData = {};
+    if (cmsRows.length > 0) {
+      shopData = {
+        general_settings: cmsRows[0].general_settings ? JSON.parse(cmsRows[0].general_settings) : {},
+        contact_details: cmsRows[0].contact_details ? JSON.parse(cmsRows[0].contact_details) : {},
+        whatsapp_settings: cmsRows[0].whatsapp_settings ? JSON.parse(cmsRows[0].whatsapp_settings) : {}
+      };
+    }
+
+    let invoice_url = null;
+    try {
+      invoice_url = await generateInvoicePDF(
+        enquiryId, 
+        { customer_name, mobile_number, customer_address }, 
+        cart_data || [], 
+        shopData
+      );
+      
+      // Update DB with invoice URL
+      if (invoice_url) {
+        await connection.query('UPDATE whatsapp_enquiries SET invoice_url = ? WHERE id = ?', [invoice_url, enquiryId]);
+      }
+    } catch (pdfErr) {
+      console.error('Failed to generate PDF:', pdfErr);
+      // We don't fail the enquiry if PDF generation fails, just proceed without it
+    }
     
     connection.release();
-    res.status(201).json({ success: true, message: 'Enquiry saved successfully' });
+    res.status(201).json({ success: true, message: 'Enquiry saved successfully', invoice_url });
   } catch (error) {
     console.error('Error saving whatsapp enquiry:', error);
     res.status(500).json({ success: false, message: 'Server error while saving enquiry' });
@@ -86,7 +117,7 @@ router.delete('/whatsapp/:id', protect, async (req, res) => {
 // @desc    Bulk Delete WhatsApp enquiries
 // @route   POST /api/enquiries/whatsapp/bulk-delete
 // @access  Private (Admin)
-router.post('/bulk-delete', protect, async (req, res) => {
+router.post('/whatsapp/bulk-delete', protect, async (req, res) => {
   const { ids } = req.body;
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ success: false, message: 'Invalid or empty IDs array' });
@@ -105,7 +136,7 @@ router.post('/bulk-delete', protect, async (req, res) => {
 // @desc    Bulk Update WhatsApp enquiry status
 // @route   POST /api/enquiries/whatsapp/bulk-status
 // @access  Private (Admin)
-router.post('/bulk-status', protect, async (req, res) => {
+router.post('/whatsapp/bulk-status', protect, async (req, res) => {
   const { ids, status } = req.body;
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ success: false, message: 'Invalid or empty IDs array' });
