@@ -24,15 +24,15 @@ router.post('/whatsapp', async (req, res) => {
     const enquiryId = result.insertId;
 
     // Fetch Shop CMS Data for PDF
-    const [cmsRows] = await connection.query('SELECT * FROM home_cms LIMIT 1');
+    const [cmsRows] = await connection.query('SELECT cms_key, cms_value FROM home_cms');
     let shopData = {};
-    if (cmsRows.length > 0) {
-      shopData = {
-        general_settings: cmsRows[0].general_settings ? JSON.parse(cmsRows[0].general_settings) : {},
-        contact_details: cmsRows[0].contact_details ? JSON.parse(cmsRows[0].contact_details) : {},
-        whatsapp_settings: cmsRows[0].whatsapp_settings ? JSON.parse(cmsRows[0].whatsapp_settings) : {}
-      };
-    }
+    cmsRows.forEach(row => {
+      try {
+        shopData[row.cms_key] = JSON.parse(row.cms_value);
+      } catch(e) {
+        shopData[row.cms_key] = row.cms_value;
+      }
+    });
 
     let invoice_url = null;
     try {
