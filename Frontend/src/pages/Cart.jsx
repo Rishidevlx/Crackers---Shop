@@ -23,6 +23,7 @@ const Cart = () => {
   }, []);
 
   const generateWhatsAppUrl = (waNumber) => {
+    /*
     let message = "Hi, I would like to order/inquire about the following items:\n\n";
     cartItems.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
@@ -40,6 +41,8 @@ const Cart = () => {
 
     const encodedMessage = encodeURIComponent(message);
     return `https://wa.me/${waNumber}?text=${encodedMessage}`;
+    */
+    return `https://wa.me/${waNumber}?text=`;
   };
 
   const handleEnquiryClick = async () => {
@@ -89,7 +92,12 @@ const Cart = () => {
       if (data.success) {
         setIsModalOpen(false);
         setMobileNumber('');
-        window.open(generateWhatsAppUrl(waSettings.number), '_blank');
+        let waUrl = generateWhatsAppUrl(waSettings.number);
+        if (data.invoice_url) {
+          const invoiceText = `Download your Estimate Invoice here:\n${data.invoice_url}`;
+          waUrl += waUrl.endsWith('text=') ? encodeURIComponent(invoiceText) : encodeURIComponent(`\n\n${invoiceText}`);
+        }
+        window.open(waUrl, '_blank');
       } else {
         toast.error('Failed to submit enquiry. Please try again.');
       }

@@ -110,7 +110,8 @@ const FloatingOrderBar = () => {
         setCustomerAddress('');
         let waUrl = generateWhatsAppUrl(waSettings.number, cartItems, cartTotal);
         if (data.invoice_url) {
-          waUrl += encodeURIComponent(`\n\n📄 Download your Estimate Invoice here:\n${data.invoice_url}`);
+          const invoiceText = `Download your Estimate Invoice here:\n${data.invoice_url}`;
+          waUrl += waUrl.endsWith('text=') ? encodeURIComponent(invoiceText) : encodeURIComponent(`\n\n${invoiceText}`);
         }
         window.open(waUrl, '_blank');
       } else {

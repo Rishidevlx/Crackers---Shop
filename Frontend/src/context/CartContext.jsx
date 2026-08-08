@@ -43,6 +43,7 @@ export const CartProvider = ({ children }) => {
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const generateWhatsAppUrl = (waNumber, itemsToOrder, totalAmount) => {
+    /* 
     let message = "Hi, I would like to order/inquire about the following items:\n\n";
     itemsToOrder.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
@@ -60,6 +61,9 @@ export const CartProvider = ({ children }) => {
 
     const encodedMessage = encodeURIComponent(message);
     return `https://wa.me/${waNumber}?text=${encodedMessage}`;
+    */
+
+    return `https://wa.me/${waNumber}?text=`;
   };
 
   return (
