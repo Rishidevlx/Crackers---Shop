@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSearch, FiShoppingCart, FiMenu, FiHeart } from 'react-icons/fi';
+import { FiSearch, FiShoppingCart, FiMenu, FiHeart, FiDownload } from 'react-icons/fi';
 import { FaBolt, FaStar } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
@@ -17,6 +17,7 @@ const Navbar = () => {
   const [marqueeText, setMarqueeText] = useState('🎉 HUGE DIWALI SALE IS LIVE! GET FLAT 50% DISCOUNT ON ALL CRACKERS 🔥');
   const [logoUrl, setLogoUrl] = useState(logo);
   const [siteName, setSiteName] = useState('AK Crackers');
+  const [pricelistPdfUrl, setPricelistPdfUrl] = useState('');
 
   useEffect(() => {
     const fetchCMS = async () => {
@@ -30,6 +31,7 @@ const Navbar = () => {
           if (data.data.general_settings) {
             if (data.data.general_settings.logo_url) setLogoUrl(data.data.general_settings.logo_url);
             if (data.data.general_settings.site_name) setSiteName(data.data.general_settings.site_name);
+            if (data.data.general_settings.pricelist_pdf_url) setPricelistPdfUrl(data.data.general_settings.pricelist_pdf_url);
             if (data.data.general_settings.favicon_url) {
               let link = document.querySelector("link[rel~='icon']");
               if (!link) {
@@ -129,7 +131,20 @@ const Navbar = () => {
               {/* Right Icons & Search */}
               <div className="flex items-center space-x-3 md:space-x-4 z-10">
                 
-                {/* Wishlist Icon */}
+                {/* Download Pricelist Button */}
+                {pricelistPdfUrl && (
+                  <a 
+                    href={pricelistPdfUrl} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    download="Shop_Pricelist.pdf"
+                    className="hidden sm:flex items-center gap-1.5 bg-transparent border-2 border-brand text-brand px-3 py-2 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold hover:bg-brand hover:text-white transition-all shadow-sm hover:shadow-md"
+                  >
+                    <FiDownload className="text-sm md:text-base" /> Download Pricelist
+                  </a>
+                )}
+
+                {/* Wishlist Icon 
                 <Link to="/wishlist" className="text-gray-700 hover:text-brand transition-colors relative group transition-transform duration-300 hover:scale-110">
                   <FiHeart className="h-5 w-5 md:h-6 md:w-6" />
                   {wishlistCount > 0 && (
@@ -138,6 +153,7 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
+                */}
 
               </div>
             </div>

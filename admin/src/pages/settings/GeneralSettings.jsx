@@ -7,6 +7,7 @@ const GeneralSettings = () => {
     site_name: '',
     logo_url: '',
     favicon_url: '',
+    pricelist_pdf_url: '',
     currency_symbol: '₹'
   });
   const [loading, setLoading] = useState(true);
@@ -30,6 +31,7 @@ const GeneralSettings = () => {
           site_name: data.data.general_settings.site_name || '',
           logo_url: data.data.general_settings.logo_url || '',
           favicon_url: data.data.general_settings.favicon_url || '',
+          pricelist_pdf_url: data.data.general_settings.pricelist_pdf_url || '',
           currency_symbol: data.data.general_settings.currency_symbol || '₹'
         });
       }
@@ -48,7 +50,7 @@ const GeneralSettings = () => {
     formData.append('image', file);
 
     setUploading(true);
-    const toastId = toast.loading('Uploading image to cloud...');
+    const toastId = toast.loading(`Uploading ${file.type === 'application/pdf' ? 'document' : 'image'} to cloud...`);
 
     try {
       const token = localStorage.getItem('adminToken');
@@ -60,7 +62,7 @@ const GeneralSettings = () => {
       const data = await response.json();
       if (data.success) {
         setSettings(prev => ({ ...prev, [field]: data.url }));
-        toast.success('Image uploaded successfully!', { id: toastId });
+        toast.success('Upload successful!', { id: toastId });
       } else {
         toast.error(data.message || 'Upload failed', { id: toastId });
       }
@@ -233,6 +235,55 @@ const GeneralSettings = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-xl font-bold"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Pricelist Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 border-b pb-2">Pricelist Configuration</h2>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Pricelist PDF Document
+            </label>
+            <div className="flex items-center gap-4">
+              {settings.pricelist_pdf_url ? (
+                <div className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-md">
+                  <FiLink className="text-red-500" />
+                  <a href={settings.pricelist_pdf_url} target="_blank" rel="noreferrer" className="text-sm underline font-medium">
+                    View Current Pricelist PDF
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setSettings(prev => ({ ...prev, pricelist_pdf_url: '' }))}
+                    className="ml-2 text-red-400 hover:text-red-600"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-full flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                  <span className="text-gray-500 text-sm">No PDF Uploaded</span>
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => document.getElementById('pricelist_upload').click()}
+                disabled={logoUploading}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                <FiUploadCloud />
+                Upload PDF
+              </button>
+              <input 
+                type="file" 
+                id="pricelist_upload"
+                className="hidden" 
+                accept="application/pdf"
+                onChange={(e) => handleImageUpload(e.target.files[0], 'pricelist_pdf_url', setLogoUploading)}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Upload a pre-designed Pricelist PDF. This will be available for users to download from the website's Floating Icon.</p>
           </div>
         </div>
 
