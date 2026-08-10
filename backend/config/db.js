@@ -12,11 +12,11 @@ const pool = mysql.createPool({
     minVersion: 'TLSv1.2',
     rejectUnauthorized: true
   },
-  waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 10000
+  keepAliveInitialDelay: 10000,
+  timezone: 'Z'
 });
 
 // Test connection and auto-create DB if it doesn't exist
@@ -96,6 +96,7 @@ const initDB = async () => {
     const createWhatsAppEnquiriesTable = `
       CREATE TABLE IF NOT EXISTS whatsapp_enquiries (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        enquiry_no INT UNIQUE,
         mobile_number VARCHAR(15) NOT NULL,
         cart_data JSON NULL,
         status ENUM('New', 'Connected', 'Enquiry Success') DEFAULT 'New',
@@ -103,6 +104,13 @@ const initDB = async () => {
       )
     `;
     await pool.query(createWhatsAppEnquiriesTable);
+    
+    try {
+      await pool.query('ALTER TABLE whatsapp_enquiries ADD COLUMN enquiry_no INT');
+      await pool.query('ALTER TABLE whatsapp_enquiries ADD UNIQUE (enquiry_no)');
+    } catch(e) {
+      // Ignore if already exists
+    }
 
     // Create admins table
     const createAdminsTable = `

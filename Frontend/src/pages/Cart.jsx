@@ -5,10 +5,12 @@ import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
   const [waSettings, setWaSettings] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -84,6 +86,8 @@ const Cart = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mobile_number: mobileNumber,
+          customer_name: customerName,
+          customer_address: customerAddress,
           cart_data: cartItems
         })
       });
@@ -92,6 +96,7 @@ const Cart = () => {
       if (data.success) {
         setIsModalOpen(false);
         setMobileNumber('');
+        clearCart();
         let waUrl = generateWhatsAppUrl(waSettings.number);
         if (data.invoice_url) {
           const invoiceText = `Download your Estimate Invoice here:\n${data.invoice_url}`;
@@ -267,6 +272,25 @@ const Cart = () => {
                     }}
                     placeholder="Enter 10-digit number" 
                     className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <div className="flex bg-gray-50 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-shadow">
+                  <input 
+                    type="text" 
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Full Name" 
+                    className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+                <div className="flex bg-gray-50 border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-shadow">
+                  <textarea 
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    placeholder="Delivery Address" 
+                    className="flex-1 w-full px-4 py-3 bg-transparent outline-none text-gray-800 placeholder-gray-400 resize-none h-24"
                     required
                   />
                 </div>

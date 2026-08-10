@@ -16,11 +16,15 @@ router.post('/whatsapp', async (req, res) => {
 
   try {
     const connection = await pool.getConnection();
+
+    const [maxRes] = await connection.query('SELECT MAX(enquiry_no) as max_no FROM whatsapp_enquiries');
+    let nextEnquiryNo = (maxRes[0].max_no || 0) + 1;
+
     const query = `
-      INSERT INTO whatsapp_enquiries (mobile_number, cart_data, customer_name, customer_address) 
-      VALUES (?, ?, ?, ?)
+      INSERT INTO whatsapp_enquiries (enquiry_no, mobile_number, cart_data, customer_name, customer_address) 
+      VALUES (?, ?, ?, ?, ?)
     `;
-    const [result] = await connection.query(query, [mobile_number, JSON.stringify(cart_data || {}), customer_name, customer_address]);
+    const [result] = await connection.query(query, [nextEnquiryNo, mobile_number, JSON.stringify(cart_data || {}), customer_name, customer_address]);
     const enquiryId = result.insertId;
 
     // Fetch Shop CMS Data for PDF
@@ -37,7 +41,7 @@ router.post('/whatsapp', async (req, res) => {
     let invoice_url = null;
     try {
       invoice_url = await generateInvoicePDF(
-        enquiryId, 
+        nextEnquiryNo, 
         { customer_name, mobile_number, customer_address }, 
         cart_data || [], 
         shopData

@@ -261,6 +261,7 @@ const WhatsAppEnquiries = () => {
 
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
@@ -399,7 +400,7 @@ const WhatsAppEnquiries = () => {
                         onChange={() => toggleSelection(enq.id)}
                       />
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">#{enq.id}</td>
+                    <td className="py-4 px-6 text-sm text-gray-600">#{enq.enquiry_no || enq.id}</td>
                     <td className="py-4 px-6 text-sm text-gray-800">
                       <div className="flex items-center gap-2">
                         <FiCalendar className="text-gray-400" />
@@ -483,7 +484,7 @@ const WhatsAppEnquiries = () => {
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <FiMessageCircle className="text-brand" /> Enquiry #{selectedEnquiry.id}
+                <FiMessageCircle className="text-brand" /> Enquiry #{selectedEnquiry.enquiry_no || selectedEnquiry.id}
               </h2>
               <button 
                 onClick={() => setSelectedEnquiry(null)}

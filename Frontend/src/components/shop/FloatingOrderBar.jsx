@@ -8,7 +8,7 @@ import { useLocation } from 'react-router-dom';
 
 const FloatingOrderBar = () => {
   const location = useLocation();
-  const { cartItems, cartTotal, cartCount, generateWhatsAppUrl } = useCart();
+  const { cartItems, cartTotal, cartCount, generateWhatsAppUrl, clearCart } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -108,6 +108,7 @@ const FloatingOrderBar = () => {
         setMobileNumber('');
         setCustomerName('');
         setCustomerAddress('');
+        clearCart();
         let waUrl = generateWhatsAppUrl(waSettings.number, cartItems, cartTotal);
         if (data.invoice_url) {
           const invoiceText = `Download your Estimate Invoice here:\n${data.invoice_url}`;
