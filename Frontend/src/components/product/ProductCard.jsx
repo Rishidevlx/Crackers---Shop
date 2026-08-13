@@ -136,11 +136,11 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
         <div className="flex flex-col items-center text-sm">
           {product.originalPrice && (
             <span className="text-red-400 line-through text-xs font-medium">
-              ₹{product.originalPrice} / 1Pkt
+              ₹{product.originalPrice} / 1 {product.unit ? product.unit : 'Pkt'}
             </span>
           )}
           <span className="font-extrabold text-gray-900">
-            ₹{product.price} / 1Pkt
+            ₹{product.price} / 1 {product.unit ? product.unit : 'Pkt'}
           </span>
         </div>
 

@@ -55,6 +55,19 @@ const Shop = () => {
               }
             }
 
+            let parsedUnit = '';
+            if (Array.isArray(p.unit) && p.unit.length > 0) {
+              parsedUnit = p.unit[0];
+            } else if (typeof p.unit === 'string') {
+              try {
+                const u = JSON.parse(p.unit);
+                if (Array.isArray(u) && u.length > 0) parsedUnit = u[0];
+                else parsedUnit = u;
+              } catch (e) {
+                parsedUnit = p.unit;
+              }
+            }
+
             return {
               id: p.id,
               name: p.name,
@@ -63,7 +76,8 @@ const Shop = () => {
               originalPrice: orig || null,
               price: curr,
               discount: discount,
-              image: p.main_image
+              image: p.main_image,
+              unit: parsedUnit
             };
           });
           setProducts(formattedProducts);
